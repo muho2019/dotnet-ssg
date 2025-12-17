@@ -14,11 +14,11 @@
 - **역할**: Front Matter 파싱
 - **설명**: 마크다운 파일 상단에 위치한 YAML 형식의 Front Matter(예: `title`, `date`, `tags`)를 파싱하는 데 사용됩니다. 추출된 메타데이터는 C# 객체에 매핑되어 템플릿에서 활용됩니다.
 
-### 3. RazorEngineCore
+### 3. Scriban
 
-- **패키지 ID**: `RazorEngineCore`
-- **역할**: Razor 템플릿 렌더링
-- **설명**: ASP.NET Core 환경 외부(예: 콘솔 애플리케이션)에서 Razor 템플릿을 컴파일하고 렌더링할 수 있게 해주는 경량 라이브러리입니다. C# 모델 객체를 Razor 템플릿에 전달하여 동적 HTML을 생성하는 데 사용됩니다.
+- **패키지 ID**: `Scriban`
+- **역할**: Liquid 템플릿 렌더링
+- **설명**: 빠르고 강력하며 활발하게 유지보수되는 Liquid 기반 템플릿 엔진입니다. 간단한 문법과 뛰어난 성능으로 다양한 종류의 템플릿을 유연하게 처리할 수 있습니다.
 
 ### 4. System.Text.Json
 

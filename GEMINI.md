@@ -11,7 +11,7 @@ dotnet-ssg
 ## 2. 핵심 목표
 
 - **콘텐츠 중심**: 마크다운(`.md`) 파일로 블로그 포스트와 페이지를 작성합니다.
-- **템플릿 기반 렌더링**: Razor 템플릿을 사용하여 HTML 레이아웃을 정의하고, 콘텐츠를 동적으로 주입합니다.
+- **템플릿 기반 렌더링**: Scriban 템플릿을 사용하여 HTML 레이아웃을 정의하고, 콘텐츠를 동적으로 주입합니다.
 - **고성능**: 빠르고 효율적인 빌드 프로세스를 지향합니다.
 - **단순성**: 복잡한 설정 없이 쉽게 사용할 수 있도록 설계합니다.
 - **SEO 최적화**: 검색 엔진 최적화(SEO)를 고려한 메타데이터 및 구조를 생성합니다.
@@ -24,8 +24,9 @@ dotnet-ssg
 - **패키지**: (자세한 내용은 [docs/nuget-packages.md](docs/nuget-packages.md) 참조)
   - Markdig (마크다운 파싱)
   - YamlDotNet (Front Matter 파싱)
-  - RazorEngineCore (Razor 템플릿 렌더링)
   - System.Text.Json (설정 관리)
+- **템플릿 엔진**: `Scriban`
+  - 이유: 빠르고 강력하며 활발하게 유지보수되는 Liquid 기반 템플릿 엔진입니다. 유연한 문법과 확장성을 제공하여 다양한 레이아웃과 콘텐츠를 효과적으로 렌더링할 수 있습니다.
 - **CSS 프레임워크**: `Tailwind CSS`
   - 이유: 유틸리티 우선(utility-first) 방식으로 CSS를 작성하여 개발 속도를 높이고, 유연한 디자인 커스터마이징을 가능하게 합니다. 빌드 시 사용하지 않는 CSS를 제거하여 최종 번들 크기를 최적화할 수 있습니다.
 
@@ -48,10 +49,10 @@ dotnet-ssg
 │   └── static/              # CSS, JS, 이미지 등 정적 파일
 │       └── css/
 │           └── style.css
-├── templates/               # Razor 템플릿 (사용자 영역)
-│   ├── _Layout.cshtml       # 기본 레이아웃
-│   ├── Post.cshtml          # 포스트 렌더링용
-│   └── Page.cshtml          # 일반 페이지 렌더링용
+├── templates/               # Scriban 템플릿 (사용자 영역)
+│   ├── layout.liquid       # 기본 레이아웃
+│   ├── post.liquid          # 포스트 렌더링용
+│   └── page.liquid          # 일반 페이지 렌더링용
 ├── output/                  # 생성된 정적 사이트 결과물
 └── config.json              # 사이트 전역 설정
 ```
@@ -69,8 +70,8 @@ dotnet-ssg
 5.  **병렬 처리**: 빌드 시간을 단축하기 위해 다수의 마크다운 파일 파싱 및 렌더링 작업을 병렬로 처리합니다. 이는 시스템의 멀티코어 프로세서의 이점을 활용하여 전체적인 사이트 생성 속도를 향상시킵니다.
 6.  **HTML 페이지 생성**:
     - 각 `Post`, `Page` 객체에 대해:
-      a. 콘텐츠 유형에 맞는 Razor 템플릿(`Post.cshtml`, `Page.cshtml`)을 결정합니다.
-      b. `_Layout.cshtml`을 포함한 템플릿에 객체 데이터를 전달하여 최종 HTML 문자열을 생성합니다.
+      a. 콘텐츠 유형에 맞는 Scriban 템플릿(`post.liquid`, `page.liquid`)을 결정합니다.
+      b. `layout.liquid`을 포함한 템플릿에 객체 데이터를 전달하여 최종 HTML 문자열을 생성합니다.
       c. 생성된 HTML을 `output/` 디렉토리에 파일로 저장합니다. (예: `output/posts/my-first-post/index.html`)
 7.  **SEO 메타데이터 주입**: 각 페이지의 Front Matter에서 추출된 SEO 관련 메타데이터(예: `<title>`, `<meta name="description">`, Open Graph 태그 등)를 최종 HTML의 `<head>` 섹션에 동적으로 삽입합니다. 이는 검색 엔진이 페이지의 콘텐츠를 정확하게 이해하고 랭킹하는 데 도움을 줍니다.
 8.  **완료**: `output/` 디렉토리에 완전한 정적 사이트가 생성됩니다.
@@ -80,7 +81,7 @@ dotnet-ssg
 ### Phase 1: 프로젝트 설정 및 핵심 모델
 
 - [x] .NET 10 콘솔 프로젝트(`DotnetSsg`) 생성
-- [ ] `docs/nuget-packages.md`에 명시된 NuGet 패키지 설치
+- [x] `docs/nuget-packages.md`에 명시된 NuGet 패키지 설치
 - [ ] `Models` 디렉토리 생성 및 데이터 모델 정의 (`SiteConfig.cs`, `Post.cs`, `Page.cs` 등)
 
 ### Phase 2: 설정 및 파일 처리
@@ -97,8 +98,8 @@ dotnet-ssg
 
 ### Phase 4: 템플릿 및 HTML 생성
 
-- [ ] `RazorEngineCore`를 사용하여 Razor 템플릿(`.cshtml`)을 렌더링하는 서비스 구현
-- [ ] `_Layout.cshtml`을 포함한 기본 템플릿 구조 생성
+- [ ] `Scriban`을 사용하여 Scriban 템플릿(`.liquid`)을 렌더링하는 서비스 구현
+- [ ] `layout.liquid`을 포함한 기본 템플릿 구조 생성
 - [ ] `Post` 및 `Page` 데이터를 템플릿에 주입하여 최종 HTML 생성
 - [ ] 생성된 HTML을 올바른 경로의 `output` 디렉토리에 파일로 저장
 
