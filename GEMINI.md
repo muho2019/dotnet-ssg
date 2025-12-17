@@ -79,7 +79,7 @@ dotnet-ssg
 
 ### Phase 1: 프로젝트 설정 및 핵심 모델
 
-- [ ] .NET 10 콘솔 프로젝트(`DotnetSsg`) 생성
+- [x] .NET 10 콘솔 프로젝트(`DotnetSsg`) 생성
 - [ ] `docs/nuget-packages.md`에 명시된 NuGet 패키지 설치
 - [ ] `Models` 디렉토리 생성 및 데이터 모델 정의 (`SiteConfig.cs`, `Post.cs`, `Page.cs` 등)
 
