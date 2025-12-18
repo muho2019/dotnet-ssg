@@ -100,10 +100,10 @@ dotnet-ssg
 
 ### Phase 4: 템플릿 및 HTML 생성
 
-- [ ] `Scriban`을 사용하여 Scriban 템플릿(`.liquid`)을 렌더링하는 서비스 구현
-- [ ] `layout.liquid`을 포함한 기본 템플릿 구조 생성
-- [ ] `Post` 및 `Page` 데이터를 템플릿에 주입하여 최종 HTML 생성
-- [ ] 생성된 HTML을 올바른 경로의 `output` 디렉토리에 파일로 저장
+- [x] `Scriban`을 사용하여 Scriban 템플릿(`.liquid`)을 렌더링하는 서비스 구현
+- [x] `layout.liquid`을 포함한 기본 템플릿 구조 생성
+- [x] `Post` 및 `Page` 데이터를 템플릿에 주입하여 최종 HTML 생성
+- [x] 생성된 HTML을 올바른 경로의 `output` 디렉토리에 파일로 저장
 
 ### Phase 5: 고급 기능 및 최적화
 

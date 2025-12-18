@@ -2,133 +2,93 @@ using System.Text.RegularExpressions;
 using DotnetSsg.Models;
 using Markdig;
 using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
 
 namespace DotnetSsg.Services;
 
 public class MarkdownParser
 {
-    private readonly MarkdownPipeline _markdownPipeline;
     private readonly IDeserializer _yamlDeserializer;
 
     public MarkdownParser()
     {
-        _markdownPipeline = new MarkdownPipelineBuilder()
-            .UseAdvancedExtensions() // GFM extensions like tables, strikethrough
-            .UseYamlFrontMatter() // Enable YamlFrontMatter extension
-            .Build();
-
-        _yamlDeserializer = new DeserializerBuilder()
-            .WithNamingConvention(CamelCaseNamingConvention.Instance)
-            .IgnoreUnmatchedProperties()
-            .Build();
+        // No need for a custom deserializer setup if we use YamlMember attributes
+        _yamlDeserializer = new DeserializerBuilder().Build();
     }
 
     public async Task<ContentItem> ParseAsync(string filePath)
     {
         var fileContent = await File.ReadAllTextAsync(filePath);
-        var frontMatter = ExtractFrontMatter(fileContent);
-        var markdownBody = RemoveFrontMatter(fileContent);
+        
+        var (frontMatter, markdownBody) = ExtractAndSeparateFrontMatter(fileContent);
 
-        var htmlContent = Markdig.Markdown.ToHtml(markdownBody, _markdownPipeline);
+        var htmlContent = Markdig.Markdown.ToHtml(markdownBody);
 
-        // Determine content type based on path
         ContentItem item;
         if (filePath.Contains("content/posts", StringComparison.OrdinalIgnoreCase))
         {
-            item = new Post();
-            if (frontMatter.ContainsKey("date") && DateTime.TryParse(frontMatter["date"].ToString(), out var date))
+            var post = _yamlDeserializer.Deserialize<Post>(frontMatter);
+            item = post;
+            
+            if (post.Date == default)
             {
-                ((Post)item).Date = date;
-            }
-            else
-            {
-                // Fallback to file creation time or current date if date is missing/invalid
-                ((Post)item).Date = File.GetCreationTime(filePath);
+                post.Date = File.GetCreationTime(filePath);
                 Console.WriteLine($"Warning: Date not found or invalid in Front Matter for '{filePath}'. Using file creation time.");
             }
-            if (frontMatter.ContainsKey("tags"))
+            // YamlDotNet handles converting single string or list of strings to List<string>
+            if (post.Tags != null)
             {
-                // YamlDotNet might parse single tag as string, multiple as List<object>
-                if (frontMatter["tags"] is IList<object> tagsList)
-                {
-                    ((Post)item).Tags = tagsList.Select(t => t.ToString()?.ToLowerInvariant() ?? string.Empty).Where(t => !string.IsNullOrEmpty(t)).ToList();
-                }
-                else if (frontMatter["tags"] is string singleTag)
-                {
-                    ((Post)item).Tags.Add(singleTag.ToLowerInvariant());
-                }
+                post.Tags = post.Tags.Select(t => t.ToLowerInvariant()).ToList();
             }
         }
         else
         {
-            item = new Page();
-            // Page specific properties can be set here if needed
+            // For pages, we can still deserialize into the base type to get Title, etc.
+            item = _yamlDeserializer.Deserialize<Page>(frontMatter);
+        }
+
+        if (string.IsNullOrWhiteSpace(item.Title))
+        {
+            item.Title = GetTitleFromFilePath(filePath);
+            Console.WriteLine($"Warning: Title not found in Front Matter for '{filePath}'. Using '{item.Title}'.");
         }
 
         item.SourcePath = filePath;
         item.HtmlContent = htmlContent;
-        item.Title = GetTitle(frontMatter, filePath);
-        item.Description = frontMatter.ContainsKey("description") ? frontMatter["description"].ToString() : null;
-        item.Url = GenerateUrl(filePath); // Placeholder for now
+        item.Url = GenerateUrl(filePath);
 
         return item;
     }
 
-    private Dictionary<string, object> ExtractFrontMatter(string fileContent)
+    private (string frontMatter, string markdown) ExtractAndSeparateFrontMatter(string fileContent)
     {
-        var match = Regex.Match(fileContent, @"^---\s*$(.*?)^---\s*$", RegexOptions.Singleline | RegexOptions.Multiline);
+        var match = Regex.Match(fileContent, @"^---\s*\r?\n(.*?)\r?\n---\s*\r?\n?(.*)", RegexOptions.Singleline);
         if (match.Success)
         {
-            var yaml = match.Groups[1].Value;
-            try
-            {
-                return _yamlDeserializer.Deserialize<Dictionary<string, object>>(yaml);
-            }
-            catch (YamlDotNet.Core.YamlException ex)
-            {
-                Console.Error.WriteLine($"Warning: Invalid YAML Front Matter. Details: {ex.Message}");
-                // Return empty dictionary on error, to proceed with markdown body
-                return new Dictionary<string, object>();
-            }
+            return (match.Groups[1].Value, match.Groups[2].Value);
         }
-        return new Dictionary<string, object>();
+        
+        return (string.Empty, fileContent);
     }
 
-    private string RemoveFrontMatter(string fileContent)
+    private string GetTitleFromFilePath(string filePath)
     {
-        return Regex.Replace(fileContent, @"^---\s*$(.*?)^---\s*$", string.Empty, RegexOptions.Singleline | RegexOptions.Multiline).TrimStart();
-    }
-
-    private string GetTitle(Dictionary<string, object> frontMatter, string filePath)
-    {
-        if (frontMatter.ContainsKey("title") && !string.IsNullOrWhiteSpace(frontMatter["title"].ToString()))
-        {
-            return frontMatter["title"].ToString()!;
-        }
-
         var fileName = Path.GetFileNameWithoutExtension(filePath);
-        var title = ToTitleCase(fileName);
-        Console.WriteLine($"Warning: Title not found in Front Matter for '{filePath}'. Using '{title}'.");
-        return title;
-    }
-
-    private string ToTitleCase(string input)
-    {
-        // Simple title case for file names, replace hyphens with spaces and capitalize words
-        return System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(input.Replace('-', ' '));
+        return System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(fileName.Replace('-', ' '));
     }
 
     private string GenerateUrl(string filePath)
     {
-        // This is a simplified URL generation, will be refined later
         var relativePath = Path.GetRelativePath("content", filePath);
-        // Standardize path separators to '/' for URLs
-        var url = relativePath.Replace(Path.DirectorySeparatorChar, '/').Replace(".md", "/");
-        if (url.EndsWith("index/"))
+        var url = relativePath.Replace(Path.DirectorySeparatorChar, '/').Replace(".md", string.Empty);
+
+        if (Path.GetFileNameWithoutExtension(filePath).Equals("index", StringComparison.OrdinalIgnoreCase))
         {
-            url = url.Replace("index/", "");
+             // For "content/index.md", url becomes "" -> "/"
+             // For "content/posts/index.md", url becomes "posts" -> "/posts/"
+            return "/" + (string.IsNullOrEmpty(url) ? "" : url + "/");
         }
-        return "/" + url.ToLowerInvariant();
+
+        // For "content/posts/my-post.md", url becomes "posts/my-post" -> "/posts/my-post/"
+        return "/" + url + "/";
     }
 }

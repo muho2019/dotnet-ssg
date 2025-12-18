@@ -1,0 +1,15 @@
+<article>
+    <header>
+        <h2>{{ item.Title }}</h2>
+        <p>Published on <time datetime="{{ item.Date | date.to_string '%Y-%m-%d' }}">{{ item.Date | date.to_string '%B %d, %Y' }}</time></p>
+        {% if item.Tags.size > 0 %}
+        <p class="tags">
+            Tags: 
+            {% for tag in item.Tags %}
+                <a href="/tags/{{ tag }}/">{{ tag }}</a>{% unless for.last %}, {% endunless %}
+            {% endfor %}
+        </p>
+        {% endif %}
+    </header>
+    {{ item.HtmlContent }}
+</article>
