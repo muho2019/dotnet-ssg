@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ site.Title }}</title>
+    <meta name="description" content="{{ site.Description }}">
+
+    <!-- SEO / Open Graph -->
+    <link rel="canonical" href="{{ site.BaseUrl }}/">
+    <meta property="og:title" content="{{ site.Title }}">
+    <meta property="og:description" content="{{ site.Description }}">
+    <meta property="og:url" content="{{ site.BaseUrl }}/">
+    <meta property="og:type" content="website">
+
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header>
+        <h1><a href="/">{{ site.Title }}</a></h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/pages/about/">About</a>
+        </nav>
+    </header>
+    <main>
+        <h2>Latest Posts</h2>
+        <ul>
+            {% for post in posts %}
+            <li>
+                <h3><a href="{{ post.Url }}">{{ post.Title }}</a></h3>
+                <p><time datetime="{{ post.Date | date.to_string '%Y-%m-%d' }}">{{ post.Date | date.to_string '%B %d, %Y' }}</time></p>
+                {% if post.Description %}
+                <p>{{ post.Description }}</p>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </main>
+    <footer>
+        <p>&copy; {{ date.now | date.to_string "%Y" }} {{ site.Title }}</p>
+    </footer>
+</body>
+</html>
