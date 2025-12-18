@@ -8,6 +8,8 @@ dotnet-ssg
 
 이 문서는 .NET 10을 사용하여 정적 사이트 생성기(Static Site Generator, SSG)를 구축하기 위한 기술적인 접근 방법을 정의합니다. 최종 목표는 이 생성기를 사용하여 개인 블로그를 제작하고 운영하는 것입니다.
 
+보다 상세한 기술 요구사항은 [docs/development-requirements.md](docs/development-requirements.md) 문서를 참고하십시오.
+
 ## 2. 핵심 목표
 
 - **콘텐츠 중심**: 마크다운(`.md`) 파일로 블로그 포스트와 페이지를 작성합니다.
