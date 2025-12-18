@@ -94,9 +94,9 @@ dotnet-ssg
 
 ### Phase 3: 콘텐츠 파싱 및 처리
 
-- [ ] 마크다운 파일 읽기 기능 구현
-- [ ] `YamlDotNet`을 사용하여 Front Matter 파싱 및 `Post`/`Page` 모델에 데이터 바인딩
-- [ ] `Markdig`를 사용하여 마크다운 본문을 HTML로 변환
+- [x] 마크다운 파일 읽기 기능 구현
+- [x] `YamlDotNet`을 사용하여 Front Matter 파싱 및 `Post`/`Page` 모델에 데이터 바인딩
+- [x] `Markdig`를 사용하여 마크다운 본문을 HTML로 변환
 
 ### Phase 4: 템플릿 및 HTML 생성
 
