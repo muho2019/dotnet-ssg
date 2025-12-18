@@ -25,14 +25,19 @@ Gemini CLI와 함께 개발합니다.
 - **CSS 프레임워크**: Tailwind CSS
 - **설정 관리**: System.Text.Json
 
-## 🚀 시작하기 (예정)
+## 🚀 시작하기
 
-1. `content/posts` 디렉토리에 마크다운 파일로 새 글을 작성합니다.
-2. 콘솔에서 다음 명령어를 실행하여 사이트를 빌드합니다:
-   ```bash
-   dotnet run
-   ```
-3. `output` 디렉토리에 생성된 정적 파일을 웹 서버에 배포합니다.
+1.  **콘텐츠 작성**:
+    *   블로그 게시물은 `content/posts` 디렉토리에 마크다운 파일(`.md`)로 작성합니다.
+    *   일반 페이지(예: About, Contact)는 `content/pages` 디렉토리에 마크다운 파일(`.md`)로 작성합니다.
+    *   CSS, JavaScript, 이미지 등 정적 파일은 `content/static` 디렉토리에 배치합니다. 이 파일들은 빌드 시 `output/static`으로 복사됩니다.
+2.  **사이트 빌드**:
+    프로젝트 루트 디렉토리에서 다음 명령어를 실행하여 정적 사이트를 생성합니다:
+    ```bash
+    dotnet run --project src/DotnetSsg
+    ```
+3.  **배포**:
+    생성된 정적 파일은 `output` 디렉토리에 있습니다. 이 파일들을 원하는 웹 서버에 배포하십시오.
 
 ## 🗺️ 로드맵
 
