@@ -88,9 +88,9 @@ dotnet-ssg
 
 ### Phase 2: 설정 및 파일 처리
 
-- [ ] `config.json` 파일 로드 및 `SiteConfig` 객체로 파싱하는 기능 구현
-- [ ] `content` 디렉토리 스캔 및 `.md` 파일 목록 반환 기능 구현
-- [ ] `static` 디렉토리의 파일을 `output` 디렉토리로 복사하는 기능 구현
+- [x] `config.json` 파일 로드 및 `SiteConfig` 객체로 파싱하는 기능 구현
+- [x] `content` 디렉토리 스캔 및 `.md` 파일 목록 반환 기능 구현
+- [x] `static` 디렉토리의 파일을 `output` 디렉토리로 복사하는 기능 구현
 
 ### Phase 3: 콘텐츠 파싱 및 처리
 
