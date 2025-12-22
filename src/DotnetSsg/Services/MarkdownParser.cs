@@ -15,7 +15,7 @@ public class MarkdownParser
         _yamlDeserializer = new DeserializerBuilder().Build();
     }
 
-    public async Task<ContentItem> ParseAsync(string filePath, string repositoryName)
+    public async Task<ContentItem> ParseAsync(string filePath, string baseUrl)
     {
         var fileContent = await File.ReadAllTextAsync(filePath);
         
@@ -54,7 +54,7 @@ public class MarkdownParser
 
         item.SourcePath = filePath;
         item.HtmlContent = htmlContent;
-        item.Url = GenerateUrl(filePath, repositoryName);
+        item.Url = GenerateUrl(filePath, baseUrl);
 
         return item;
     }
@@ -76,19 +76,19 @@ public class MarkdownParser
         return System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(fileName.Replace('-', ' '));
     }
 
-    private string GenerateUrl(string filePath, string repositoryName)
+    private string GenerateUrl(string filePath, string baseUrl)
     {
         var relativePath = Path.GetRelativePath("content", filePath);
-        var url = string.Concat(repositoryName, "/", relativePath.Replace(Path.DirectorySeparatorChar, '/').Replace(".md", string.Empty));
+        var url = string.Concat(baseUrl, "/", relativePath.Replace(Path.DirectorySeparatorChar, '/').Replace(".md", string.Empty));
 
         if (Path.GetFileNameWithoutExtension(filePath).Equals("index", StringComparison.OrdinalIgnoreCase))
         {
              // For "content/index.md", url becomes "" -> "/"
              // For "content/posts/index.md", url becomes "posts" -> "/posts/"
-            return "/" + (string.IsNullOrEmpty(url) ? "" : url + "/");
+            return string.IsNullOrEmpty(url) ? "" : url + "/";
         }
 
         // For "content/posts/my-post.md", url becomes "posts/my-post" -> "/posts/my-post/"
-        return "/" + url + "/";
+        return url + "/";
     }
 }

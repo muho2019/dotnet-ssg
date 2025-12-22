@@ -18,7 +18,7 @@ public class HtmlGenerator
         var layoutTemplatePath = "templates/layout.liquid";
 
         // Render the inner content first
-        var innerContent = await _templateRenderer.RenderAsync(contentTemplatePath, new { item });
+        var innerContent = await _templateRenderer.RenderAsync(contentTemplatePath, new { item, site = siteConfig });
 
         // Render the full page with the layout
         var fullHtml = await _templateRenderer.RenderAsync(layoutTemplatePath, new { item, site = siteConfig, content = innerContent });

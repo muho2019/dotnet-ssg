@@ -6,7 +6,7 @@
         <p class="tags">
             Tags: 
             {% for tag in item.Tags %}
-                <a href="/tags/{{ tag }}/">{{ tag }}</a>{% unless for.last %}, {% endunless %}
+                <a href="{{ site.BaseUrl }}/tags/{{ tag }}/">{{ tag }}</a>{% unless for.last %}, {% endunless %}
             {% endfor %}
         </p>
         {% endif %}
