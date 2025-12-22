@@ -1,114 +1,108 @@
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using DotnetSsg.Models;
 using DotnetSsg.Services;
-using System.Diagnostics;
 
-// Helper to clean and recreate a directory
-void CleanAndCreateDirectory(string path)
-{
-    if (Directory.Exists(path))
-    {
-        Directory.Delete(path, true);
-    }
-    Directory.CreateDirectory(path);
-}
-
-// Main execution
 var stopwatch = Stopwatch.StartNew();
+Console.WriteLine("🚀 dotnet-ssg 빌드를 시작합니다...");
+
 try
 {
-    Console.WriteLine("Static Site Generation starting...");
+    // 0. 경로 설정
+    var currentDir = Directory.GetCurrentDirectory();
+    var contentDir = Path.Combine(currentDir, "content");
+    var outputDir = Path.Combine(currentDir, "output");
+    var staticDir = Path.Combine(contentDir, "static");
+    var templatesDir = Path.Combine(currentDir, "templates");
+    var configPath = Path.Combine(currentDir, "config.json");
 
-    // 0. Clean output directory
-    Console.WriteLine("\n0. Cleaning output directory...");
-    CleanAndCreateDirectory("output");
-    Console.WriteLine("   > Output directory cleaned.");
+    // 출력 디렉토리 준비
+    if (!Directory.Exists(outputDir))
+    {
+        Directory.CreateDirectory(outputDir);
+    }
 
-    // 1. Load Config
-    Console.WriteLine("\n1. Loading site configuration...");
+    // 1. 서비스 초기화
+    // (Phase 2~4에서 구현된 서비스들을 인스턴스화합니다)
     var configLoader = new ConfigLoader();
-    var siteConfig = await configLoader.LoadConfigAsync();
-    Console.WriteLine($"   > Site Title: {siteConfig.Title}");
-
-    // 2. Scan for content
-    Console.WriteLine("\n2. Scanning for markdown files...");
     var fileScanner = new FileScanner();
-    var markdownFiles = fileScanner.Scan("content", "md").ToList();
-    Console.WriteLine($"   > Found {markdownFiles.Count} markdown files.");
-
-    // 3. Copy static files
-    Console.WriteLine("\n3. Copying static files...");
     var staticFileCopier = new StaticFileCopier();
-    staticFileCopier.Copy("content/static", "output/static");
-    Console.WriteLine("   > Static files copied.");
-
-
-    // 4. Parse Markdown files in parallel
-    Console.WriteLine("\n4. Parsing markdown files...");
     var markdownParser = new MarkdownParser();
-    var contentItems = new List<ContentItem>();
-    var parseTasks = markdownFiles.Select(async file =>
+    var templateRenderer = new TemplateRenderer();
+    var htmlGenerator = new HtmlGenerator(templateRenderer);
+
+    // 2. 설정 로드
+    Console.WriteLine("설정 로딩 중...");
+    var siteConfig = await configLoader.LoadConfigAsync(configPath);
+
+    // 3. 정적 파일 복사
+    Console.WriteLine("정적 파일 복사 중...");
+    staticFileCopier.Copy(staticDir, Path.Combine(outputDir, "static"));
+
+    // 4. 콘텐츠 스캔
+    Console.WriteLine("콘텐츠 스캔 중...");
+    var files = fileScanner.Scan(contentDir, "md");
+    Console.WriteLine($"파일 {files.Count()}개를 찾았습니다.");
+
+    // 5. 콘텐츠 파싱 및 HTML 생성 (병렬 처리)
+    Console.WriteLine("콘텐츠 파싱 및 생성 중...");
+    var posts = new ConcurrentBag<Post>();
+    
+    var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount };
+    await Parallel.ForEachAsync(files, parallelOptions, async (file, ct) =>
     {
         try
         {
-            var item = await markdownParser.ParseAsync(file);
-            lock (contentItems)
+            var contentItem = await markdownParser.ParseAsync(file);
+            
+            // HTML 생성 및 저장
+            // HtmlGenerator가 템플릿 렌더링과 파일 저장을 담당한다고 가정합니다.
+            await htmlGenerator.GenerateAsync(contentItem, siteConfig);
+
+            if (contentItem is Post post)
             {
-                contentItems.Add(item);
+                posts.Add(post);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"[ERROR] Failed to parse '{file}': {ex.Message}");
+            Console.WriteLine($"'{file}' 처리 중 오류 발생: {ex.Message}");
         }
     });
-    await Task.WhenAll(parseTasks);
-    Console.WriteLine($"   > Parsed {contentItems.Count} content items.");
 
-    var posts = contentItems.OfType<Post>().ToList();
-    var pages = contentItems.OfType<Page>().ToList();
-    Console.WriteLine($"   > Posts: {posts.Count}, Pages: {pages.Count}");
+    // 6. 인덱스 페이지 및 아카이브 생성
+    Console.WriteLine("인덱스 및 아카이브 생성 중...");
+    var sortedPosts = posts.OrderByDescending(p => p.Date).ToList();
 
-
-    // 5. Generate individual HTML pages in parallel
-    Console.WriteLine("\n5. Generating individual HTML pages...");
-    var templateRenderer = new TemplateRenderer();
-    var htmlGenerator = new HtmlGenerator(templateRenderer);
-    await Parallel.ForEachAsync(contentItems.Where(i => !Path.GetFileName(i.SourcePath).Equals("index.md", StringComparison.OrdinalIgnoreCase)), async (item, token) =>
+    // 인덱스 페이지 (Home)
+    var indexTemplatePath = Path.Combine(templatesDir, "index.liquid");
+    if (File.Exists(indexTemplatePath))
     {
-        try
+        var indexHtml = await templateRenderer.RenderAsync(indexTemplatePath, new { site = siteConfig, posts = sortedPosts });
+        await File.WriteAllTextAsync(Path.Combine(outputDir, "index.html"), indexHtml);
+    }
+
+    // 태그별 아카이브
+    var tags = sortedPosts.SelectMany(p => p.Tags ?? Enumerable.Empty<string>()).Distinct();
+    var tagTemplatePath = Path.Combine(templatesDir, "tag_archive.liquid");
+    if (File.Exists(tagTemplatePath))
+    {
+        foreach (var tag in tags)
         {
-            await htmlGenerator.GenerateAsync(item, siteConfig);
+            var tagPosts = sortedPosts.Where(p => p.Tags != null && p.Tags.Contains(tag)).ToList();
+            var tagHtml = await templateRenderer.RenderAsync(tagTemplatePath, new { site = siteConfig, tag = tag, posts = tagPosts });
+            
+            var tagDir = Path.Combine(outputDir, "tags", tag);
+            Directory.CreateDirectory(tagDir);
+            await File.WriteAllTextAsync(Path.Combine(tagDir, "index.html"), tagHtml);
         }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"[ERROR] Failed to generate HTML for '{item.SourcePath}': {ex.Message}");
-        }
-    });
-    Console.WriteLine("   > Individual pages generated.");
-
-
-    // 6. Generate aggregate pages (Index, Tags)
-    Console.WriteLine("\n6. Generating aggregate pages...");
-    var indexGenerator = new IndexGenerator(templateRenderer);
-    await indexGenerator.GenerateAsync(contentItems, siteConfig);
-    Console.WriteLine("   > Index page generated.");
-
-    var tagArchiveGenerator = new TagArchiveGenerator(templateRenderer);
-    await tagArchiveGenerator.GenerateAsync(contentItems, siteConfig);
-    Console.WriteLine("   > Tag archive pages generated.");
+    }
 
     stopwatch.Stop();
-    Console.ForegroundColor = ConsoleColor.Green;
-    Console.WriteLine($"\n✅ Success! Static site generation complete in {stopwatch.ElapsedMilliseconds}ms.");
-    Console.ResetColor();
+    Console.WriteLine($"✅ 빌드가 {stopwatch.ElapsedMilliseconds}ms만에 성공적으로 완료되었습니다.");
 }
 catch (Exception ex)
 {
-    stopwatch.Stop();
-    Console.ForegroundColor = ConsoleColor.Red;
-    Console.Error.WriteLine($"\n❌ An unhandled error occurred: {ex.Message}");
-    Console.Error.WriteLine(ex.StackTrace);
-    Console.ResetColor();
-    Console.WriteLine($"\nStatic site generation failed after {stopwatch.ElapsedMilliseconds}ms.");
-    Environment.ExitCode = 1;
+    Console.Error.WriteLine($"❌ 빌드 실패: {ex.Message}");
+    Environment.Exit(1);
 }
