@@ -23,13 +23,13 @@ try
     }
 
     // 1. 서비스 초기화
-    // (Phase 2~4에서 구현된 서비스들을 인스턴스화합니다)
     var configLoader = new ConfigLoader();
     var fileScanner = new FileScanner();
     var staticFileCopier = new StaticFileCopier();
     var markdownParser = new MarkdownParser();
     var templateRenderer = new TemplateRenderer();
     var htmlGenerator = new HtmlGenerator(templateRenderer);
+    var sitemapGenerator = new SitemapGenerator();
 
     // 2. 설정 로드
     Console.WriteLine("설정 로딩 중...");
@@ -46,23 +46,17 @@ try
 
     // 5. 콘텐츠 파싱 및 HTML 생성 (병렬 처리)
     Console.WriteLine("콘텐츠 파싱 및 생성 중...");
-    var posts = new ConcurrentBag<Post>();
+    var contentItems = new ConcurrentBag<ContentItem>();
     
     var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount };
     await Parallel.ForEachAsync(files, parallelOptions, async (file, ct) =>
     {
         try
         {
-            var contentItem = await markdownParser.ParseAsync(file);
+            var contentItem = await markdownParser.ParseAsync(file, siteConfig.RepositoryName);
+            contentItems.Add(contentItem);
             
-            // HTML 생성 및 저장
-            // HtmlGenerator가 템플릿 렌더링과 파일 저장을 담당한다고 가정합니다.
             await htmlGenerator.GenerateAsync(contentItem, siteConfig);
-
-            if (contentItem is Post post)
-            {
-                posts.Add(post);
-            }
         }
         catch (Exception ex)
         {
@@ -72,6 +66,7 @@ try
 
     // 6. 인덱스 페이지 및 아카이브 생성
     Console.WriteLine("인덱스 및 아카이브 생성 중...");
+    var posts = contentItems.OfType<Post>().ToList();
     var sortedPosts = posts.OrderByDescending(p => p.Date).ToList();
 
     // 인덱스 페이지 (Home)
@@ -97,6 +92,10 @@ try
             await File.WriteAllTextAsync(Path.Combine(tagDir, "index.html"), tagHtml);
         }
     }
+
+    // 7. 사이트맵 생성
+    Console.WriteLine("사이트맵 생성 중...");
+    sitemapGenerator.Generate(siteConfig, contentItems.ToList(), outputDir);
 
     stopwatch.Stop();
     Console.WriteLine($"✅ 빌드가 {stopwatch.ElapsedMilliseconds}ms만에 성공적으로 완료되었습니다.");

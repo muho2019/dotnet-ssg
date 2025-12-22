@@ -16,13 +16,7 @@
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <header>
-        <h1><a href="/">{{ site.Title }}</a></h1>
-        <nav>
-            <a href="/">Home</a>
-            <a href="/about">About</a>
-        </nav>
-    </header>
+    {% include '_includes/header.liquid' %}
     <main>
         <h2>Latest Posts</h2>
         <ul>

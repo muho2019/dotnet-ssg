@@ -1,52 +1,78 @@
-using Scriban;
-using Scriban.Runtime;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Scriban;
+using Scriban.Parsing;
+using Scriban.Runtime;
 
-namespace DotnetSsg.Services;
-
-public class TemplateRenderer
+namespace DotnetSsg.Services
 {
-    private readonly Dictionary<string, Template> _templateCache = new();
-
-    public async Task<string> RenderAsync(string templatePath, object model)
+    public class FileSystemTemplateLoader : ITemplateLoader
     {
-        var template = await GetOrLoadTemplateAsync(templatePath);
-        
-        var context = new TemplateContext
+        private readonly string _basePath;
+
+        public FileSystemTemplateLoader(string basePath)
         {
-            // Use a renamer to keep C# PascalCase naming convention, which is cleaner.
-            MemberRenamer = member => member.Name
-        };
+            _basePath = basePath;
+        }
 
-        var scriptObject = new ScriptObject();
-        scriptObject.Import(model);
-        context.PushGlobal(scriptObject);
+        public string GetPath(TemplateContext context, SourceSpan callerSpan, string templateName)
+        {
+            return Path.Combine(_basePath, templateName);
+        }
 
-        return await template.RenderAsync(context);
+        public string Load(TemplateContext context, SourceSpan callerSpan, string templatePath)
+        {
+            return File.ReadAllText(templatePath);
+        }
+
+        public async ValueTask<string> LoadAsync(TemplateContext context, SourceSpan callerSpan, string templatePath)
+        {
+            return await File.ReadAllTextAsync(templatePath);
+        }
     }
 
-    private async Task<Template> GetOrLoadTemplateAsync(string templatePath)
+    public class TemplateRenderer
     {
-        if (_templateCache.TryGetValue(templatePath, out var cachedTemplate))
+        private readonly Dictionary<string, Template> _templateCache = new();
+
+        public async Task<string> RenderAsync(string templatePath, object model)
         {
-            return cachedTemplate;
+            var template = await GetOrLoadTemplateAsync(templatePath);
+            
+            var context = new TemplateContext
+            {
+                MemberRenamer = member => member.Name,
+                TemplateLoader = new FileSystemTemplateLoader("templates")
+            };
+
+            var scriptObject = new ScriptObject();
+            scriptObject.Import(model);
+            context.PushGlobal(scriptObject);
+
+            return await template.RenderAsync(context);
         }
 
-        if (!File.Exists(templatePath))
+        private async Task<Template> GetOrLoadTemplateAsync(string templatePath)
         {
-            throw new FileNotFoundException($"Template file not found: {templatePath}");
+            if (_templateCache.TryGetValue(templatePath, out var cachedTemplate))
+            {
+                return cachedTemplate;
+            }
+
+            if (!File.Exists(templatePath))
+            {
+                throw new FileNotFoundException($"Template file not found: {templatePath}");
+            }
+
+            var templateContent = await File.ReadAllTextAsync(templatePath);
+            
+            var template = Template.ParseLiquid(templateContent, templatePath);
+            
+            _templateCache[templatePath] = template;
+
+            return template;
         }
-
-        var templateContent = await File.ReadAllTextAsync(templatePath);
-        
-        // Use ParseLiquid to enable full Liquid syntax compatibility, which includes
-        // control flow statements like {% if %} and {% for %}.
-        var template = Template.ParseLiquid(templateContent, templatePath);
-        
-        _templateCache[templatePath] = template;
-
-        return template;
     }
 }

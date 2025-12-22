@@ -15,13 +15,13 @@ public class MarkdownParser
         _yamlDeserializer = new DeserializerBuilder().Build();
     }
 
-    public async Task<ContentItem> ParseAsync(string filePath)
+    public async Task<ContentItem> ParseAsync(string filePath, string repositoryName)
     {
         var fileContent = await File.ReadAllTextAsync(filePath);
         
         var (frontMatter, markdownBody) = ExtractAndSeparateFrontMatter(fileContent);
 
-        var htmlContent = Markdig.Markdown.ToHtml(markdownBody);
+        var htmlContent = Markdown.ToHtml(markdownBody);
 
         ContentItem item;
         if (filePath.Contains("content/posts", StringComparison.OrdinalIgnoreCase))
@@ -54,7 +54,7 @@ public class MarkdownParser
 
         item.SourcePath = filePath;
         item.HtmlContent = htmlContent;
-        item.Url = GenerateUrl(filePath);
+        item.Url = GenerateUrl(filePath, repositoryName);
 
         return item;
     }
@@ -76,10 +76,10 @@ public class MarkdownParser
         return System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(fileName.Replace('-', ' '));
     }
 
-    private string GenerateUrl(string filePath)
+    private string GenerateUrl(string filePath, string repositoryName)
     {
         var relativePath = Path.GetRelativePath("content", filePath);
-        var url = relativePath.Replace(Path.DirectorySeparatorChar, '/').Replace(".md", string.Empty);
+        var url = string.Concat(repositoryName, "/", relativePath.Replace(Path.DirectorySeparatorChar, '/').Replace(".md", string.Empty));
 
         if (Path.GetFileNameWithoutExtension(filePath).Equals("index", StringComparison.OrdinalIgnoreCase))
         {
