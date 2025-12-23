@@ -1,17 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ site.Language }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ site.Title }}</title>
     <meta name="description" content="{{ site.Description }}">
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ site.BaseUrl }}/favicon.ico">
+
     <!-- SEO / Open Graph -->
     <link rel="canonical" href="{{ site.BaseUrl }}/">
+    <link rel="alternate" type="application/rss+xml" title="{{ site.Title }} RSS Feed" href="{{ site.BaseUrl }}/feed.xml">
     <meta property="og:title" content="{{ site.Title }}">
     <meta property="og:description" content="{{ site.Description }}">
     <meta property="og:url" content="{{ site.BaseUrl }}/">
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ site.Title }}">
+    <meta property="og:locale" content="{{ site.Language }}">
+    {% if site.OgImage %}
+    <meta property="og:image" content="{{ site.OgImage }}">
+    <meta property="og:image:alt" content="{{ site.OgImageAlt }}">
+    {% endif %}
+    
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="{% if site.OgImage %}summary_large_image{% else %}summary{% endif %}">
+    {% if site.TwitterSite %}<meta name="twitter:site" content="{{ site.TwitterSite }}">{% endif %}
+    {% if site.TwitterCreator %}<meta name="twitter:creator" content="{{ site.TwitterCreator }}">{% endif %}
+    <meta name="twitter:title" content="{{ site.Title }}">
+    <meta name="twitter:description" content="{{ site.Description }}">
+    {% if site.OgImage %}
+    <meta name="twitter:image" content="{{ site.OgImage }}">
+    <meta name="twitter:image:alt" content="{{ site.OgImageAlt }}">
+    {% endif %}
 
     <link rel="stylesheet" href="/static/css/style.css">
 </head>

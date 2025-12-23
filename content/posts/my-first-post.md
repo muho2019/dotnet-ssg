@@ -1,6 +1,6 @@
 ---
 title: "My First Blog Post"
-date: "2023-10-27"
+date: "2023-10-27 12:10:01"
 tags:
     - introduction
     - ssg

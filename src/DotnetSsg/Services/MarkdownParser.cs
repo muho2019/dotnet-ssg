@@ -39,11 +39,31 @@ public class MarkdownParser
             {
                 post.Tags = post.Tags.Select(t => t.ToLowerInvariant()).ToList();
             }
+            
+            // Set SEO defaults for posts
+            if (item.Priority == 0.5) // Not set by user
+            {
+                item.Priority = 0.7; // Posts are more important than default
+            }
+            if (item.ChangeFrequency == "monthly") // Default value
+            {
+                item.ChangeFrequency = "never"; // Posts typically don't change
+            }
         }
         else
         {
             // For pages, we can still deserialize into the base type to get Title, etc.
             item = _yamlDeserializer.Deserialize<Page>(frontMatter);
+            
+            // Set SEO defaults for pages
+            if (item.Priority == 0.5) // Not set by user
+            {
+                item.Priority = 0.7; // Pages have good priority
+            }
+            if (item.ChangeFrequency == "monthly") // Default value
+            {
+                item.ChangeFrequency = "monthly";
+            }
         }
 
         if (string.IsNullOrWhiteSpace(item.Title))

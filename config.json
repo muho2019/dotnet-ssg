@@ -1,5 +1,11 @@
 {
   "title": "muho's blog",
   "description": "Welcome to my personal blog built with dotnet-ssg!",
-  "baseUrl": "https://muho2019.github.io/dotnet-ssg/"
+  "baseUrl": "https://muho2019.github.io/dotnet-ssg/",
+  "author": "muho",
+  "language": "ko",
+  "ogImage": "https://muho2019.github.io/dotnet-ssg/static/images/og-image.png",
+  "ogImageAlt": "muho's blog cover image",
+  "twitterSite": "@muho2019",
+  "twitterCreator": "@muho2019"
 }

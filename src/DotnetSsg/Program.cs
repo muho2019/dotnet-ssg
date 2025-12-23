@@ -30,6 +30,8 @@ try
     var templateRenderer = new TemplateRenderer();
     var htmlGenerator = new HtmlGenerator(templateRenderer);
     var sitemapGenerator = new SitemapGenerator();
+    var robotsTxtGenerator = new RobotsTxtGenerator();
+    var rssFeedGenerator = new RssFeedGenerator();
 
     // 2. 설정 로드
     Console.WriteLine("설정 로딩 중...");
@@ -38,6 +40,17 @@ try
     // 3. 정적 파일 복사
     Console.WriteLine("정적 파일 복사 중...");
     staticFileCopier.Copy(staticDir, Path.Combine(outputDir, "static"));
+
+    // Favicon 복사 (content 폴더의 favicon 파일들을 output 루트로)
+    string[] faviconFiles = [ "favicon.ico" ];
+    foreach (var faviconFile in faviconFiles)
+    {
+        var sourcePath = Path.Combine(contentDir, faviconFile);
+        if (File.Exists(sourcePath))
+        {
+            File.Copy(sourcePath, Path.Combine(outputDir, faviconFile), true);
+        }
+    }
 
     // 4. 콘텐츠 스캔
     Console.WriteLine("콘텐츠 스캔 중...");
@@ -67,24 +80,25 @@ try
     // 6. 인덱스 페이지 및 아카이브 생성
     Console.WriteLine("인덱스 및 아카이브 생성 중...");
     var posts = contentItems.OfType<Post>().ToList();
-    var sortedPosts = posts.OrderByDescending(p => p.Date).ToList();
 
     // 인덱스 페이지 (Home)
     var indexTemplatePath = Path.Combine(templatesDir, "index.liquid");
     if (File.Exists(indexTemplatePath))
     {
-        var indexHtml = await templateRenderer.RenderAsync(indexTemplatePath, new { site = siteConfig, posts = sortedPosts });
+        var sortedPostsForIndex = posts.OrderByDescending(p => p.Date).ToList();
+        var indexHtml = await templateRenderer.RenderAsync(indexTemplatePath, new { site = siteConfig, posts = sortedPostsForIndex });
         await File.WriteAllTextAsync(Path.Combine(outputDir, "index.html"), indexHtml);
     }
 
     // 태그별 아카이브
-    var tags = sortedPosts.SelectMany(p => p.Tags ?? Enumerable.Empty<string>()).Distinct();
+    var tags = posts.SelectMany(p => p.Tags ?? Enumerable.Empty<string>()).Distinct();
     var tagTemplatePath = Path.Combine(templatesDir, "tag_archive.liquid");
     if (File.Exists(tagTemplatePath))
     {
+        var sortedPostsForTags = posts.OrderByDescending(p => p.Date).ToList();
         foreach (var tag in tags)
         {
-            var tagPosts = sortedPosts.Where(p => p.Tags != null && p.Tags.Contains(tag)).ToList();
+            var tagPosts = sortedPostsForTags.Where(p => p.Tags != null && p.Tags.Contains(tag)).ToList();
             var tagHtml = await templateRenderer.RenderAsync(tagTemplatePath, new { site = siteConfig, tag = tag, posts = tagPosts });
             
             var tagDir = Path.Combine(outputDir, "tags", tag);
@@ -93,9 +107,18 @@ try
         }
     }
 
-    // 7. 사이트맵 생성
+    // 7. 사이트맵을 위한 콘텐츠 항목 준비
     Console.WriteLine("사이트맵 생성 중...");
-    sitemapGenerator.Generate(siteConfig, contentItems.ToList(), outputDir);
+    var sortedPosts = posts.OrderByDescending(p => p.Date).ToList();
+    sitemapGenerator.Generate(siteConfig, contentItems.ToList(), outputDir, sortedPosts, tags.ToList());
+
+    // 8. robots.txt 생성
+    Console.WriteLine("robots.txt 생성 중...");
+    robotsTxtGenerator.Generate(siteConfig, outputDir);
+
+    // 9. RSS 피드 생성
+    Console.WriteLine("RSS 피드 생성 중...");
+    rssFeedGenerator.Generate(siteConfig, sortedPosts, outputDir);
 
     stopwatch.Stop();
     Console.WriteLine($"✅ 빌드가 {stopwatch.ElapsedMilliseconds}ms만에 성공적으로 완료되었습니다.");
