@@ -47,8 +47,6 @@
     <main>
         {{ content }}
     </main>
-    <footer>
-        <p>&copy; {{ date.now | date.to_string "%Y" }} {{ site.Title }}</p>
-    </footer>
+    {% include '_includes/footer.liquid' %}
 </body>
 </html>
