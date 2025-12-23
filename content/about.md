@@ -1,21 +1,30 @@
 ---
-title: "About Me 2"
-description: "페이지 테스트 2"
+title: "About Me"
+description: "열정적인 .NET 개발자의 공간"
 ---
 
-Hello there! 2
+<img src="https://muho2019.github.io/static/images/og-image.png" alt="Profile" width="300">
 
-I'm **muho**, a passionate developer interested in .NET and static site generation.
+안녕하세요, **muho**입니다. 👋
 
-This blog is a place where I share my thoughts, learnings, and projects related to software development, technology, and occasionally, my hobbies.
+저는 .NET 생태계에 깊은 애정을 가진 백엔드 개발자입니다. 
+코드를 작성하고, 문제를 해결하며, 더 나은 소프트웨어를 만들어가는 과정에서 큰 즐거움을 느낍니다.
 
-Feel free to look around and connect with me!
+이 블로그는 제가 개발하면서 얻은 인사이트와 경험, 그리고 개인 프로젝트에서의 시행착오와 배움을 기록하는 공간입니다. 
+때로는 기술적인 깊이 있는 내용을, 때로는 일상적인 개발 이야기를 공유하려 합니다.
 
 ---
 
-**Skills & Interests:**
-*   .NET Development (C#, ASP.NET Core)
-*   Static Site Generators
-*   Web Development (HTML, CSS, JavaScript)
-*   Cloud Computing (Azure/AWS)
-*   Open Source Contributions
+### 💻 Skills & Interests
+
+**현재 집중하고 있는 것들:**
+- **.NET 개발** - C#과 ASP.NET Core를 활용한 백엔드 아키텍처 설계 및 구현
+- **오픈 소스 기여** - 커뮤니티와 함께 성장하는 개발 문화에 기여
+- **기술 블로그 운영** - 배운 것을 정리하고 공유하는 습관 만들기
+
+**앞으로 탐험할 영역:**
+- **Go 언어** - 곧 학습을 시작할 예정입니다
+
+---
+
+편하게 둘러보시고, 궁금한 점이나 의견이 있다면 언제든 연락 주세요!
