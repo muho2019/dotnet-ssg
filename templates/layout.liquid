@@ -7,10 +7,10 @@
     <meta name="description" content="{% if item.Description %}{{ item.Description }}{% else %}{{ site.Description }}{% endif %}">
     
     <!-- SEO / Open Graph -->
-    <link rel="canonical" href="{{ site.BaseUrl }}{{ item.Url }}">
+    <link rel="canonical" href="{{ item.Url }}">
     <meta property="og:title" content="{{ item.Title }}">
     <meta property="og:description" content="{% if item.Description %}{{ item.Description }}{% else %}{{ site.Description }}{% endif %}">
-    <meta property="og:url" content="{{ site.BaseUrl }}{{ item.Url }}">
+    <meta property="og:url" content="{{ item.Url }}">
     <meta property="og:type" content="{% if item.Date %}article{% else %}website{% endif %}">
 
     <link rel="stylesheet" href="/static/css/style.css">

@@ -24,6 +24,10 @@ public class ConfigLoader
             {
                 PropertyNameCaseInsensitive = true
             });
+            if (config != null)
+            {
+                config.BaseUrl = config.BaseUrl?.TrimEnd('/') ?? string.Empty;
+            }
             return config ?? new SiteConfig();
         }
         catch (JsonException ex)
