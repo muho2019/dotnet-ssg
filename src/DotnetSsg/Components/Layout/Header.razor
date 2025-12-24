@@ -1,0 +1,19 @@
+<header class="md:hidden border-b border-notion-gray-light dark:border-notion-gray-dark">
+    <div class="flex items-center justify-between p-4">
+        <a href="/" class="flex items-center gap-2 text-lg font-semibold">
+            <span>📝</span>
+            <span>@SiteTitle</span>
+        </a>
+        
+        <button onclick="toggleMobileMenu()" class="p-2 hover:bg-notion-gray-light dark:hover:bg-notion-gray-dark rounded transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
+    </div>
+</header>
+
+@code {
+    [Parameter]
+    public string SiteTitle { get; set; } = string.Empty;
+}

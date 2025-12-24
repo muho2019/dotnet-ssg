@@ -1,0 +1,17 @@
+@* 일반 페이지 (About 등) *@
+<article class="max-w-notion mx-auto px-6 md:px-24 py-12">
+    
+    <h1 class="text-notion-title mb-8 font-bold text-notion-text dark:text-notion-text-dark">
+        @Page.Title
+    </h1>
+    
+    <div class="notion-content">
+        @((MarkupString)Page.HtmlContent)
+    </div>
+    
+</article>
+
+@code {
+    [Parameter, EditorRequired]
+    public ContentItem Page { get; set; } = null!;
+}

@@ -18,7 +18,7 @@ public class SitemapGenerator
             Url = "",
             Priority = 1.0,
             ChangeFrequency = "weekly",
-            SourcePath = Path.Combine(Path.GetDirectoryName(contentItems.First().SourcePath) ?? "", "..", "..", "templates", "index.liquid"),
+            SourcePath = "index.html", // 수정: 간단한 경로로 변경
             LastModified = DateTime.Now
         };
         sitemapItems.Add(homePage);
@@ -33,7 +33,7 @@ public class SitemapGenerator
                 Url = $"tags/{tag}/",
                 Priority = 0.6,
                 ChangeFrequency = "monthly",
-                SourcePath = Path.Combine(Path.GetDirectoryName(contentItems.First().SourcePath) ?? "", "..", "..", "templates", "tag_archive.liquid"),
+                SourcePath = $"tags/{tag}/index.html", // 수정: 간단한 경로로 변경
                 LastModified = posts
                     .Where(p => p.Tags != null && p.Tags.Contains(tag))
                     .Max(p => (DateTime?)p.Date) ?? DateTime.Now
@@ -62,7 +62,7 @@ public class SitemapGenerator
             }
             
             // Add changefreq
-            if (!string.IsNullOrEmpty(item.ChangeFrequency))
+            if (! string.IsNullOrEmpty(item.ChangeFrequency))
             {
                 sitemapContent.AppendLine($"    <changefreq>{item.ChangeFrequency}</changefreq>");
             }
@@ -97,19 +97,15 @@ public class SitemapGenerator
         if (item is Page page && page.Date.HasValue)
             return page.Date.Value;
 
-        // Otherwise, try to get file modification time
-        if (File.Exists(item.SourcePath))
-            return File.GetLastWriteTime(item.SourcePath);
-
         return null;
     }
 
-    private static string XmlEscape(string unescaped)
+    private string XmlEscape(string text)
     {
-        return unescaped.Replace("&", "&amp;")
-                      .Replace("'", "&apos;")
-                      .Replace("\"", "&quot;")
-                      .Replace(">", "&gt;")
-                      .Replace("<", "&lt;");
+        return text.Replace("&", "&amp;")
+                   .Replace("<", "&lt;")
+                   .Replace(">", "&gt;")
+                   .Replace("\"", "&quot;")
+                   .Replace("'", "&apos;");
     }
 }

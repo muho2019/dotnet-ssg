@@ -1,0 +1,20 @@
+<details class="my-4 group">
+    <summary class="cursor-pointer flex items-center gap-2 px-3 py-2 rounded hover:bg-notion-gray-light dark:hover:bg-notion-gray-dark transition list-none">
+        <svg class="w-4 h-4 transform transition-transform group-open:rotate-90" 
+             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+        <span class="font-medium">@Title</span>
+    </summary>
+    <div class="ml-6 mt-2 pl-3 border-l-2 border-notion-gray-light dark:border-notion-gray-dark">
+        @ChildContent
+    </div>
+</details>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = string.Empty;
+    
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

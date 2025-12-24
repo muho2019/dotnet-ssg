@@ -75,6 +75,7 @@ public class MarkdownParser
         item.SourcePath = filePath;
         item.HtmlContent = htmlContent;
         item.Url = GenerateUrl(filePath, baseUrl);
+        item.OutputPath = GenerateOutputPath(filePath);
 
         return item;
     }
@@ -110,5 +111,29 @@ public class MarkdownParser
 
         // For "content/posts/my-post.md", url becomes "posts/my-post" -> "/posts/my-post/"
         return url + "/";
+    }
+
+    private string GenerateOutputPath(string filePath)
+    {
+        var relativePath = Path.GetRelativePath("content", filePath);
+        var fileName = Path.GetFileNameWithoutExtension(relativePath);
+        var directory = Path.GetDirectoryName(relativePath) ?? string.Empty;
+
+        // "content/about.md" -> "about/index.html"
+        // "content/posts/my-first-post.md" -> "posts/my-first-post/index.html"
+        if (fileName.Equals("index", StringComparison.OrdinalIgnoreCase))
+        {
+            // "content/index.md" -> "index.html"
+            // "content/posts/index.md" -> "posts/index.html"
+            return string.IsNullOrEmpty(directory) 
+                ? "index.html" 
+                : Path.Combine(directory, "index.html").Replace(Path.DirectorySeparatorChar, '/');
+        }
+
+        var outputDir = string.IsNullOrEmpty(directory)
+            ? fileName
+            : Path.Combine(directory, fileName);
+
+        return Path.Combine(outputDir, "index.html").Replace(Path.DirectorySeparatorChar, '/');
     }
 }

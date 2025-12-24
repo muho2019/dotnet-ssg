@@ -15,9 +15,4 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.1" />
   </ItemGroup>
 
-  <!-- Tailwind CSS 빌드를 dotnet build에 통합 (선택적) -->
-  <Target Name="BuildTailwindCSS" BeforeTargets="Build" Condition="'$(Configuration)' == 'Release'">
-    <Exec Command="npm run css:build" WorkingDirectory="$(ProjectDir).. /.." />
-  </Target>
-
 </Project>
