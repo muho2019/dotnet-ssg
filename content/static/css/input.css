@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Notion 스타일 기본 설정 */
+@layer base {
+  body {
+    @apply font-sans antialiased;
+  }
+}
+
+/* Notion 스타일 콘텐츠 타이포그래피 */
+@layer components {
+  .notion-content {
+    @apply text-notion-body text-notion-text dark:text-notion-text-dark;
+  }
+
+  /* 제목 스타일 */
+  .notion-content h1 {
+    @apply text-notion-h1 font-semibold mt-8 mb-4;
+  }
+
+  .notion-content h2 {
+    @apply text-notion-h2 font-semibold mt-6 mb-3;
+  }
+
+  .notion-content h3 {
+    @apply text-notion-h3 font-semibold mt-5 mb-2;
+  }
+
+  /* 단락 */
+  .notion-content p {
+    @apply mb-4 leading-relaxed;
+  }
+
+  /* 링크 */
+  .notion-content a {
+    @apply text-notion-blue underline decoration-1 underline-offset-2 hover:decoration-2 transition;
+  }
+
+  /* 리스트 */
+  .notion-content ul, 
+  .notion-content ol {
+    @apply ml-6 mb-4 space-y-1;
+  }
+
+  .notion-content li {
+    @apply leading-relaxed;
+  }
+
+  .notion-content ul li {
+    @apply list-disc;
+  }
+
+  .notion-content ol li {
+    @apply list-decimal;
+  }
+
+  /* 인용구 */
+  .notion-content blockquote {
+    @apply border-l-4 border-notion-text dark:border-notion-text-dark pl-4 py-2 my-4 italic text-notion-gray;
+  }
+
+  /* 코드 (인라인) */
+  .notion-content :not(pre) > code {
+    @apply bg-notion-gray-light dark:bg-notion-gray-dark px-1.5 py-0.5 rounded text-sm font-mono text-notion-red;
+  }
+
+  /* 코드 블록 */
+  .notion-content pre {
+    @apply bg-notion-gray-light dark:bg-notion-gray-dark rounded-lg p-4 my-4 overflow-x-auto;
+  }
+
+  .notion-content pre code {
+    @apply bg-transparent p-0 text-sm text-notion-text dark:text-notion-text-dark;
+  }
+
+  /* 이미지 */
+  .notion-content img {
+    @apply rounded-lg my-6 mx-auto shadow-sm;
+  }
+
+  /* 테이블 */
+  .notion-content table {
+    @apply w-full my-6 border-collapse;
+  }
+
+  .notion-content th {
+    @apply bg-notion-gray-light dark:bg-notion-gray-dark text-left px-4 py-2 font-semibold border-b border-notion-gray-light dark:border-notion-gray-dark;
+  }
+
+  .notion-content td {
+    @apply px-4 py-2 border-b border-notion-gray-light dark:border-notion-gray-dark;
+  }
+
+  /* 구분선 */
+  .notion-content hr {
+    @apply my-8 border-t border-notion-gray-light dark:border-notion-gray-dark;
+  }
+}
