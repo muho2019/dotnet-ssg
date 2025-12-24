@@ -1,0 +1,145 @@
+@using Microsoft.AspNetCore.Components.Web
+@using DotnetSsg.Models
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<html lang="@Language">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@(PageTitle + (string.IsNullOrEmpty(SiteTitle) ? "" : $" | {SiteTitle}"))</title>
+    
+    @if (!string.IsNullOrEmpty(Description))
+    {
+        <meta name="description" content="@Description">
+    }
+    
+    @if (!string.IsNullOrEmpty(CanonicalUrl))
+    {
+        <link rel="canonical" href="@CanonicalUrl">
+    }
+    
+    @if (!string.IsNullOrEmpty(RssFeedUrl))
+    {
+        <link rel="alternate" type="application/rss+xml" title="@(SiteTitle) RSS Feed" href="@RssFeedUrl">
+    }
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="@PageTitle">
+    @if (!string.IsNullOrEmpty(Description))
+    {
+        <meta property="og:description" content="@Description">
+    }
+    @if (!string.IsNullOrEmpty(OgImage))
+    {
+        <meta property="og:image" content="@OgImage">
+    }
+    
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@PageTitle">
+    @if (!string.IsNullOrEmpty(Description))
+    {
+        <meta name="twitter:description" content="@Description">
+    }
+    
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    
+    <!-- Google Fonts for Notion-like typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-white dark:bg-notion-bg-dark text-notion-text dark:text-notion-text-dark transition-colors duration-200">
+    <Header SiteTitle="@SiteTitle" BaseUrl="@BaseUrl" OnDarkModeToggle="@HandleDarkModeToggle" IsDarkMode="@IsDarkMode" />
+    
+    <main class="min-h-screen">
+        @ChildContent
+    </main>
+    
+    <Footer SiteTitle="@SiteTitle" />
+    
+    <script src="_framework/blazor.web.js"></script>
+</body>
+</html>
+
+@code {
+    [Parameter]
+    public string PageTitle { get; set; } = "Home";
+    
+    [Parameter]
+    public string SiteTitle { get; set; } = "My Site";
+    
+    [Parameter]
+    public string? Description { get; set; }
+    
+    [Parameter]
+    public string? CanonicalUrl { get; set; }
+    
+    [Parameter]
+    public string? RssFeedUrl { get; set; }
+    
+    [Parameter]
+    public string? OgImage { get; set; }
+    
+    [Parameter]
+    public string BaseUrl { get; set; } = "/";
+    
+    [Parameter]
+    public string Language { get; set; } = "ko";
+    
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    private bool IsDarkMode;
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                var result = await JS.InvokeAsync<string>("localStorage.getItem", "darkMode");
+                IsDarkMode = result == "true";
+                
+                if (IsDarkMode)
+                {
+                    await JS.InvokeVoidAsync("document.documentElement.classList.add", "dark");
+                }
+                
+                StateHasChanged();
+            }
+            catch
+            {
+                // JS 호출 실패 무시
+            }
+        }
+    }
+    
+    private async Task HandleDarkModeToggle(bool isDark)
+    {
+        IsDarkMode = isDark;
+        
+        try
+        {
+            if (isDark)
+            {
+                await JS.InvokeVoidAsync("document.documentElement.classList.add", "dark");
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("document.documentElement.classList.remove", "dark");
+            }
+            
+            await JS.InvokeVoidAsync("localStorage.setItem", "darkMode", isDark.ToString().ToLower());
+        }
+        catch
+        {
+            // JS 호출 실패 무시
+        }
+    }
+    
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        await Task.CompletedTask;
+    }
+}

@@ -1,6 +1,6 @@
 module.exports = {
   content: [
-    "./src/**/*.{razor,html,cshtml,cs}",
+    "./src/DotnetSsg/**/*.{razor,html,cshtml,cs}",
     "./templates/**/*.liquid"
   ],
   darkMode: 'class',

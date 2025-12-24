@@ -1,0 +1,52 @@
+@using DotnetSsg.Models
+@namespace DotnetSsg.Components.Pages
+
+<MainLayout PageTitle="@Page?.Title" SiteTitle="@SiteTitle" Description="@Page?.Description" 
+             CanonicalUrl="@(BaseUrl.TrimEnd('/') + Page?.Url)" RssFeedUrl="@RssFeedUrl"
+             BaseUrl="@BaseUrl" Language="@Language">
+    <div class="max-w-notion mx-auto px-4 py-12 sm:px-6 lg:px-8">
+        @if (Page != null)
+        {
+            <ArticleHeader Content="@Page" BaseUrl="@BaseUrl" />
+            
+            <!-- Page Content -->
+            <article class="prose dark:prose-invert max-w-none">
+                @((MarkupString)Page.HtmlContent)
+            </article>
+            
+            <!-- Back to Home -->
+            <div class="mt-12 pt-8 border-t border-notion-gray-light dark:border-notion-gray-dark">
+                <a href="@BaseUrl" 
+                   class="inline-flex items-center space-x-2 text-notion-blue dark:text-blue-400 hover:text-notion-blue/70 dark:hover:text-blue-300 transition-colors group">
+                    <svg class="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    <span class="font-medium">홈으로 돌아가기</span>
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-12">
+                <p class="text-notion-gray dark:text-gray-400">페이지를 찾을 수 없습니다.</p>
+            </div>
+        }
+    </div>
+</MainLayout>
+
+@code {
+    [Parameter]
+    public Page? Page { get; set; }
+    
+    [Parameter]
+    public string SiteTitle { get; set; } = "My Site";
+    
+    [Parameter]
+    public string BaseUrl { get; set; } = "/";
+    
+    [Parameter]
+    public string? RssFeedUrl { get; set; }
+    
+    [Parameter]
+    public string Language { get; set; } = "ko";
+}

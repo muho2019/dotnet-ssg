@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -9,8 +9,15 @@
 
   <ItemGroup>
     <PackageReference Include="Markdig" Version="0.44.0" />
-    <PackageReference Include="Scriban" Version="6.5.2" />
     <PackageReference Include="YamlDotNet" Version="16.3.0" />
+    <!-- Blazor 렌더링을 위한 패키지 -->
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.1" />
   </ItemGroup>
+
+  <!-- Tailwind CSS 빌드를 dotnet build에 통합 (선택적) -->
+  <Target Name="BuildTailwindCSS" BeforeTargets="Build" Condition="'$(Configuration)' == 'Release'">
+    <Exec Command="npm run css:build" WorkingDirectory="$(ProjectDir).. /.." />
+  </Target>
 
 </Project>

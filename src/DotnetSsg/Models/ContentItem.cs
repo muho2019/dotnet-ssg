@@ -38,4 +38,7 @@ public abstract class ContentItem
     /// Last modified date for sitemap. If null, will use file modification time or post date
     /// </summary>
     public DateTime? LastModified { get; set; }
+
+    // Notion 스타일 커버 이미지
+    public string?  CoverImage { get; set; }
 }
