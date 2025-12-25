@@ -12,4 +12,5 @@ public class SiteConfig
     public string? TwitterSite { get; set; }
     public string? TwitterCreator { get; set; }
     public string? GithubUrl { get; set; }
+    public string? GoogleAnalyticsId { get; set; }
 }
