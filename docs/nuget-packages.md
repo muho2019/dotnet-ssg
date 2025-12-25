@@ -14,13 +14,19 @@
 - **역할**: Front Matter 파싱
 - **설명**: 마크다운 파일 상단에 위치한 YAML 형식의 Front Matter(예: `title`, `date`, `tags`)를 파싱하는 데 사용됩니다. 추출된 메타데이터는 C# 객체에 매핑되어 템플릿에서 활용됩니다.
 
-### 3. Scriban
+### 3. Microsoft.AspNetCore.Components.Web
 
-- **패키지 ID**: `Scriban`
-- **역할**: Liquid 템플릿 렌더링
-- **설명**: 빠르고 강력하며 활발하게 유지보수되는 Liquid 기반 템플릿 엔진입니다. 간단한 문법과 뛰어난 성능으로 다양한 종류의 템플릿을 유연하게 처리할 수 있습니다.
+- **패키지 ID**: `Microsoft.AspNetCore.Components.Web`
+- **역할**: Blazor 컴포넌트 렌더링
+- **설명**: ASP.NET Core Blazor의 핵심 컴포넌트 렌더링 기능을 제공합니다. `HtmlRenderer`를 통해 Blazor 컴포넌트를 정적 HTML로 렌더링할 수 있으며, 재사용 가능한 컴포넌트 기반 템플릿 시스템을 구축할 수 있습니다.
 
-### 4. System.Text.Json
+### 4. Microsoft.Extensions.Logging.Console
+
+- **패키지 ID**: `Microsoft.Extensions.Logging.Console`
+- **역할**: 로깅
+- **설명**: Blazor 렌더링 과정에서 발생하는 경고나 오류를 콘솔에 출력하기 위한 로깅 프레임워크입니다.
+
+### 5. System.Text.Json
 
 - **패키지 ID**: `System.Text.Json`
 - **역할**: 설정 관리

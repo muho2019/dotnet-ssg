@@ -19,7 +19,7 @@ public class RssFeedGenerator
         var outputPath = Path.Combine(outputDirectory, "feed.xml");
 
         using var writer = XmlWriter.Create(outputPath, settings);
-        
+
         writer.WriteStartDocument();
         writer.WriteStartElement("rss");
         writer.WriteAttributeString("version", "2.0");
@@ -31,7 +31,7 @@ public class RssFeedGenerator
         writer.WriteElementString("title", config.Title);
         writer.WriteElementString("description", config.Description);
         writer.WriteElementString("link", config.BaseUrl);
-        
+
         // Self link (Atom namespace)
         writer.WriteStartElement("atom", "link", "http://www.w3.org/2005/Atom");
         writer.WriteAttributeString("href", $"{config.BaseUrl.TrimEnd('/')}/feed.xml");
@@ -51,13 +51,13 @@ public class RssFeedGenerator
         foreach (var post in sortedPosts)
         {
             writer.WriteStartElement("item");
-            
+
             writer.WriteElementString("title", post.Title);
-            
+
             var postUrl = new Uri(new Uri(config.BaseUrl), post.Url.TrimStart('/')).ToString();
             writer.WriteElementString("link", postUrl);
             writer.WriteElementString("guid", postUrl);
-            
+
             if (!string.IsNullOrEmpty(post.Description))
             {
                 writer.WriteElementString("description", post.Description);

@@ -1,34 +1,71 @@
 using DotnetSsg.Models;
+using DotnetSsg.Components.Pages;
+using DotnetSsg.Components.Layout;
+using Microsoft.AspNetCore.Components;
 
 namespace DotnetSsg.Services;
 
 public class HtmlGenerator
 {
-    private readonly TemplateRenderer _templateRenderer;
+    private readonly BlazorRenderer _blazorRenderer;
 
-    public HtmlGenerator(TemplateRenderer templateRenderer)
+    public HtmlGenerator(BlazorRenderer blazorRenderer)
     {
-        _templateRenderer = templateRenderer;
+        _blazorRenderer = blazorRenderer;
     }
 
     public async Task GenerateAsync(ContentItem item, SiteConfig siteConfig)
     {
-        var templateName = item is Post ? "post" : "page";
-        var contentTemplatePath = $"templates/{templateName}.liquid";
-        var layoutTemplatePath = "templates/layout.liquid";
+        string fullHtml;
 
-        // Render the inner content first
-        var innerContent = await _templateRenderer.RenderAsync(contentTemplatePath, new { item, site = siteConfig });
+        if (item is Post post)
+        {
+            // Post를 직접 MainLayout의 Body로 전달
+            var layoutParams = new Dictionary<string, object?>
+            {
+                ["ChildContent"] = (RenderFragment)(builder =>
+                {
+                    builder.OpenComponent<PostPage>(0);
+                    builder.AddAttribute(1, "Post", post);
+                    builder.CloseComponent();
+                }),
+                ["Title"] = post.Title,
+                ["Description"] = post.Description ?? siteConfig.Description,
+                ["SiteTitle"] = siteConfig.Title,
+                ["Author"] = siteConfig.Author,
+                ["GithubUrl"] = siteConfig.GithubUrl
+            };
 
-        // Render the full page with the layout
-        var fullHtml = await _templateRenderer.RenderAsync(layoutTemplatePath, new { item, site = siteConfig, content = innerContent });
-        
-        // Determine output path for pretty URLs (e.g., /posts/my-post/index.html)
+            fullHtml = await _blazorRenderer.RenderComponentAsync<MainLayout>(layoutParams);
+        }
+        else
+        {
+            // Page를 직접 MainLayout의 Body로 전달
+            var layoutParams = new Dictionary<string, object?>
+            {
+                ["ChildContent"] = (RenderFragment)(builder =>
+                {
+                    builder.OpenComponent<PageTemplate>(0);
+                    builder.AddAttribute(1, "Page", item);
+                    builder.CloseComponent();
+                }),
+                ["Title"] = item.Title,
+                ["Description"] = item.Description ?? siteConfig.Description,
+                ["SiteTitle"] = siteConfig.Title,
+                ["Author"] = siteConfig.Author,
+                ["GithubUrl"] = siteConfig.GithubUrl
+            };
+
+            fullHtml = await _blazorRenderer.RenderComponentAsync<MainLayout>(layoutParams);
+        }
+
+        // 출력 경로 결정
         var relativePath = Path.GetRelativePath("content", item.SourcePath);
         var pathWithoutExtension = Path.ChangeExtension(relativePath, null);
-        
+
         string outputPath;
-        if (Path.GetFileNameWithoutExtension(item.SourcePath).Equals("index", StringComparison.OrdinalIgnoreCase))
+        var fileName = Path.GetFileNameWithoutExtension(item.SourcePath);
+        if (fileName.Equals("index", StringComparison.OrdinalIgnoreCase))
         {
             var parentDir = Path.GetDirectoryName(pathWithoutExtension);
             outputPath = Path.Combine("output", parentDir ?? string.Empty, "index.html");
@@ -38,12 +75,68 @@ public class HtmlGenerator
             outputPath = Path.Combine("output", pathWithoutExtension, "index.html");
         }
 
+        // 디렉토리 생성 및 파일 저장
         var outputDir = Path.GetDirectoryName(outputPath);
         if (outputDir != null)
         {
             Directory.CreateDirectory(outputDir);
         }
 
+        await File.WriteAllTextAsync(outputPath, fullHtml);
+        Console.WriteLine($"Generated: {outputPath}");
+    }
+
+    public async Task GenerateIndexAsync(SiteConfig siteConfig, List<Post> posts, string outputDirectory)
+    {
+        var layoutParams = new Dictionary<string, object?>
+        {
+            ["ChildContent"] = (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<IndexPage>(0);
+                builder.AddAttribute(1, "Site", siteConfig);
+                builder.AddAttribute(2, "Posts", posts);
+                builder.CloseComponent();
+            }),
+            ["Title"] = siteConfig.Title,
+            ["Description"] = siteConfig.Description,
+            ["SiteTitle"] = siteConfig.Title,
+            ["Author"] = siteConfig.Author,
+            ["GithubUrl"] = siteConfig.GithubUrl
+        };
+
+        var fullHtml = await _blazorRenderer.RenderComponentAsync<MainLayout>(layoutParams);
+
+        var outputPath = Path.Combine(outputDirectory, "index.html");
+        await File.WriteAllTextAsync(outputPath, fullHtml);
+        Console.WriteLine($"Generated: {outputPath}");
+    }
+
+    public async Task GenerateTagArchiveAsync(SiteConfig siteConfig, string tag, List<Post> posts,
+        string outputDirectory)
+    {
+        var layoutParams = new Dictionary<string, object?>
+        {
+            ["ChildContent"] = (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TagArchive>(0);
+                builder.AddAttribute(1, "Site", siteConfig);
+                builder.AddAttribute(2, "Tag", tag);
+                builder.AddAttribute(3, "Posts", posts);
+                builder.CloseComponent();
+            }),
+            ["Title"] = $"{tag} - {siteConfig.Title}",
+            ["Description"] = $"{tag} 태그가 포함된 포스트",
+            ["SiteTitle"] = siteConfig.Title,
+            ["Author"] = siteConfig.Author,
+            ["GithubUrl"] = siteConfig.GithubUrl
+        };
+
+        var fullHtml = await _blazorRenderer.RenderComponentAsync<MainLayout>(layoutParams);
+
+        var tagDir = Path.Combine(outputDirectory, "tags", tag);
+        Directory.CreateDirectory(tagDir);
+
+        var outputPath = Path.Combine(tagDir, "index.html");
         await File.WriteAllTextAsync(outputPath, fullHtml);
         Console.WriteLine($"Generated: {outputPath}");
     }

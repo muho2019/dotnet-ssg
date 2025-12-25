@@ -11,4 +11,5 @@ public class SiteConfig
     public string OgImageAlt { get; set; } = "Site cover image";
     public string? TwitterSite { get; set; }
     public string? TwitterCreator { get; set; }
+    public string? GithubUrl { get; set; }
 }
