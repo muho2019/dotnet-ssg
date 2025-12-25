@@ -33,7 +33,8 @@ public class HtmlGenerator
                 ["Description"] = post.Description ?? siteConfig.Description,
                 ["SiteTitle"] = siteConfig.Title,
                 ["Author"] = siteConfig.Author,
-                ["GithubUrl"] = siteConfig.GithubUrl
+                ["GithubUrl"] = siteConfig.GithubUrl,
+                ["GoogleAnalyticsId"] = siteConfig.GoogleAnalyticsId
             };
 
             fullHtml = await _blazorRenderer.RenderComponentAsync<MainLayout>(layoutParams);
@@ -53,7 +54,8 @@ public class HtmlGenerator
                 ["Description"] = item.Description ?? siteConfig.Description,
                 ["SiteTitle"] = siteConfig.Title,
                 ["Author"] = siteConfig.Author,
-                ["GithubUrl"] = siteConfig.GithubUrl
+                ["GithubUrl"] = siteConfig.GithubUrl,
+                ["GoogleAnalyticsId"] = siteConfig.GoogleAnalyticsId
             };
 
             fullHtml = await _blazorRenderer.RenderComponentAsync<MainLayout>(layoutParams);
@@ -101,7 +103,8 @@ public class HtmlGenerator
             ["Description"] = siteConfig.Description,
             ["SiteTitle"] = siteConfig.Title,
             ["Author"] = siteConfig.Author,
-            ["GithubUrl"] = siteConfig.GithubUrl
+            ["GithubUrl"] = siteConfig.GithubUrl,
+            ["GoogleAnalyticsId"] = siteConfig.GoogleAnalyticsId
         };
 
         var fullHtml = await _blazorRenderer.RenderComponentAsync<MainLayout>(layoutParams);
@@ -128,7 +131,8 @@ public class HtmlGenerator
             ["Description"] = $"{tag} 태그가 포함된 포스트",
             ["SiteTitle"] = siteConfig.Title,
             ["Author"] = siteConfig.Author,
-            ["GithubUrl"] = siteConfig.GithubUrl
+            ["GithubUrl"] = siteConfig.GithubUrl,
+            ["GoogleAnalyticsId"] = siteConfig.GoogleAnalyticsId
         };
 
         var fullHtml = await _blazorRenderer.RenderComponentAsync<MainLayout>(layoutParams);
