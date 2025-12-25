@@ -1,0 +1,8 @@
+[*.cs]
+resharper_place_attribute_on_same_line = never
+resharper_place_type_attribute_on_same_line = never
+resharper_place_method_attribute_on_same_line = never
+resharper_place_accessorholder_attribute_on_same_line = never
+resharper_place_field_attribute_on_same_line = never
+
+dotnet_diagnostic.IDE0005.severity = warning

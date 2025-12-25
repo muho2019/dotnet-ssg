@@ -29,7 +29,7 @@
                             @post.Title
                         </h2>
                         
-                        @if (! string.IsNullOrEmpty(post.Description))
+                        @if (!string.IsNullOrEmpty(post.Description))
                         {
                             <p class="text-sm text-notion-gray mt-1 line-clamp-2">
                                 @post.Description
@@ -41,7 +41,7 @@
                                 @post.Date.ToString("yyyy년 MM월 dd일")
                             </time>
                             
-                            @if (post.Tags != null && post.Tags.Any())
+                            @if (post.Tags.Any())
                             {
                                 <div class="flex flex-wrap gap-1">
                                     @foreach (var tag in post.Tags.Take(3))
@@ -66,7 +66,7 @@
         }
     </div>
     
-    @if (! Posts.Any())
+    @if (!Posts.Any())
     {
         <div class="text-center py-12 text-notion-gray">
             <p class="text-6xl mb-4">📭</p>

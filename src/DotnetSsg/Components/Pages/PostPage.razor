@@ -1,5 +1,5 @@
 @* Notion 스타일 커버 이미지 (선택적) *@
-@if (! string.IsNullOrEmpty(Post.CoverImage))
+@if (!string.IsNullOrEmpty(Post.CoverImage))
 {
     <div class="w-full h-60 md:h-80 overflow-hidden">
         <img src="@Post.CoverImage" 
@@ -23,7 +23,7 @@
             <span>@Post.Date.ToString("yyyy년 MM월 dd일")</span>
         </time>
         
-        @if (Post.Tags != null && Post.Tags.Any())
+        @if (Post.Tags.Any())
         {
             <div class="flex items-center gap-2">
                 <span>🏷️</span>
@@ -51,7 +51,7 @@
     @* 댓글 섹션 (미래 구현) *@
     <div class="mt-12">
         <h2 class="text-notion-h2 mb-6 font-semibold">💬 댓글</h2>
-        <p class="text-notion-gray">댓글 기능은 추후 추가 예정입니다. </p>
+        <p class="text-notion-gray">댓글 기능은 추후 추가 예정입니다.</p>
     </div>
     
 </article>

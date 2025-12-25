@@ -17,7 +17,7 @@ public class HtmlGenerator
     public async Task GenerateAsync(ContentItem item, SiteConfig siteConfig)
     {
         string fullHtml;
-        
+
         if (item is Post post)
         {
             // Post를 직접 MainLayout의 Body로 전달
@@ -30,12 +30,12 @@ public class HtmlGenerator
                     builder.CloseComponent();
                 }),
                 ["Title"] = post.Title,
-                ["Description"] = post.Description ??  siteConfig.Description,
+                ["Description"] = post.Description ?? siteConfig.Description,
                 ["SiteTitle"] = siteConfig.Title,
                 ["Author"] = siteConfig.Author,
                 ["GithubUrl"] = siteConfig.GithubUrl
             };
-            
+
             fullHtml = await _blazorRenderer.RenderComponentAsync<MainLayout>(layoutParams);
         }
         else
@@ -55,19 +55,20 @@ public class HtmlGenerator
                 ["Author"] = siteConfig.Author,
                 ["GithubUrl"] = siteConfig.GithubUrl
             };
-            
+
             fullHtml = await _blazorRenderer.RenderComponentAsync<MainLayout>(layoutParams);
         }
 
         // 출력 경로 결정
         var relativePath = Path.GetRelativePath("content", item.SourcePath);
         var pathWithoutExtension = Path.ChangeExtension(relativePath, null);
-        
+
         string outputPath;
-        if (Path.GetFileNameWithoutExtension(item.SourcePath).Equals("index", StringComparison.OrdinalIgnoreCase))
+        var fileName = Path.GetFileNameWithoutExtension(item.SourcePath);
+        if (fileName.Equals("index", StringComparison.OrdinalIgnoreCase))
         {
             var parentDir = Path.GetDirectoryName(pathWithoutExtension);
-            outputPath = Path.Combine("output", parentDir ??  string.Empty, "index.html");
+            outputPath = Path.Combine("output", parentDir ?? string.Empty, "index.html");
         }
         else
         {
@@ -102,15 +103,16 @@ public class HtmlGenerator
             ["Author"] = siteConfig.Author,
             ["GithubUrl"] = siteConfig.GithubUrl
         };
-        
+
         var fullHtml = await _blazorRenderer.RenderComponentAsync<MainLayout>(layoutParams);
-        
+
         var outputPath = Path.Combine(outputDirectory, "index.html");
         await File.WriteAllTextAsync(outputPath, fullHtml);
         Console.WriteLine($"Generated: {outputPath}");
     }
 
-    public async Task GenerateTagArchiveAsync(SiteConfig siteConfig, string tag, List<Post> posts, string outputDirectory)
+    public async Task GenerateTagArchiveAsync(SiteConfig siteConfig, string tag, List<Post> posts,
+        string outputDirectory)
     {
         var layoutParams = new Dictionary<string, object?>
         {
@@ -128,12 +130,12 @@ public class HtmlGenerator
             ["Author"] = siteConfig.Author,
             ["GithubUrl"] = siteConfig.GithubUrl
         };
-        
+
         var fullHtml = await _blazorRenderer.RenderComponentAsync<MainLayout>(layoutParams);
-        
+
         var tagDir = Path.Combine(outputDirectory, "tags", tag);
         Directory.CreateDirectory(tagDir);
-        
+
         var outputPath = Path.Combine(tagDir, "index.html");
         await File.WriteAllTextAsync(outputPath, fullHtml);
         Console.WriteLine($"Generated: {outputPath}");

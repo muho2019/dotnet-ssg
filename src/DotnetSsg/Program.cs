@@ -5,7 +5,7 @@ using DotnetSsg.Services;
 var stopwatch = Stopwatch.StartNew();
 Console.WriteLine("🚀 dotnet-ssg 빌드를 시작합니다...");
 
-BlazorRenderer?  blazorRenderer = null;
+BlazorRenderer? blazorRenderer = null;
 
 try
 {
@@ -21,6 +21,7 @@ try
     {
         Directory.Delete(outputDir, true);
     }
+
     Directory.CreateDirectory(outputDir);
 
     // 1. 서비스 초기화
@@ -28,11 +29,11 @@ try
     var fileScanner = new FileScanner();
     var staticFileCopier = new StaticFileCopier();
     var markdownParser = new MarkdownParser();
-    
+
     // Blazor 렌더러 초기화
     blazorRenderer = new BlazorRenderer();
     var htmlGenerator = new HtmlGenerator(blazorRenderer);
-    
+
     var sitemapGenerator = new SitemapGenerator();
     var robotsTxtGenerator = new RobotsTxtGenerator();
     var rssFeedGenerator = new RssFeedGenerator();
@@ -46,7 +47,7 @@ try
     staticFileCopier.Copy(staticDir, Path.Combine(outputDir, "static"));
 
     // Favicon 복사
-    string[] faviconFiles = [ "favicon.ico" ];
+    string[] faviconFiles = ["favicon.ico"];
     foreach (var faviconFile in faviconFiles)
     {
         var sourcePath = Path.Combine(contentDir, faviconFile);
@@ -59,19 +60,20 @@ try
     // 4. 콘텐츠 스캔
     Console.WriteLine("🔍 콘텐츠 스캔 중...");
     var files = fileScanner.Scan(contentDir, "md");
-    Console.WriteLine($"📝 파일 {files.Count()}개를 찾았습니다.");
+    var fileList = files.ToList();
+    Console.WriteLine($"📝 파일 {fileList.Count}개를 찾았습니다.");
 
     // 5. 콘텐츠 파싱 및 HTML 생성 (순차 처리로 변경)
     Console.WriteLine("⚙️ 콘텐츠 파싱 및 생성 중...");
     var contentItems = new List<ContentItem>();
-    
-    foreach (var file in files)
+
+    foreach (var file in fileList)
     {
         try
         {
             var contentItem = await markdownParser.ParseAsync(file, siteConfig.BaseUrl);
             contentItems.Add(contentItem);
-            
+
             await htmlGenerator.GenerateAsync(contentItem, siteConfig);
         }
         catch (Exception ex)
@@ -88,16 +90,17 @@ try
     await htmlGenerator.GenerateIndexAsync(siteConfig, posts, outputDir);
 
     // 태그별 아카이브
-    var tags = posts.SelectMany(p => p.Tags ??  Enumerable.Empty<string>()).Distinct();
-    foreach (var tag in tags)
+    var tags = posts.SelectMany(p => p.Tags).Distinct();
+    var tagList = tags.ToList();
+    foreach (var tag in tagList)
     {
-        var tagPosts = posts.Where(p => p.Tags != null && p.Tags.Contains(tag)).ToList();
+        var tagPosts = posts.Where(p => p.Tags.Contains(tag)).ToList();
         await htmlGenerator.GenerateTagArchiveAsync(siteConfig, tag, tagPosts, outputDir);
     }
 
     // 7. 사이트맵 생성
     Console.WriteLine("🗺️ 사이트맵 생성 중...");
-    sitemapGenerator.Generate(siteConfig, contentItems.ToList(), outputDir, posts, tags.ToList());
+    sitemapGenerator.Generate(siteConfig, contentItems.ToList(), outputDir, posts, tagList.ToList());
 
     // 8. robots.txt 생성
     Console.WriteLine("🤖 robots.txt 생성 중...");
@@ -108,7 +111,7 @@ try
 
     stopwatch.Stop();
     Console.WriteLine($"✅ 빌드가 {stopwatch.ElapsedMilliseconds}ms만에 성공적으로 완료되었습니다.");
-    Console.WriteLine($"📊 총 {contentItems.Count}개의 콘텐츠, {posts.Count}개의 포스트, {tags.Count()}개의 태그");
+    Console.WriteLine($"📊 총 {contentItems.Count}개의 콘텐츠, {posts.Count}개의 포스트, {tagList.Count}개의 태그");
 }
 catch (Exception ex)
 {
@@ -125,9 +128,12 @@ finally
         {
             await blazorRenderer.DisposeAsync();
         }
-        catch
+        catch (Exception disposeEx)
         {
-            // Dispose 에러는 무시
+            // Dispose 에러는 무시하지만, 디버깅을 위해 로그를 남깁니다.
+            Console.Error.WriteLine(
+                $"⚠️ BlazorRenderer Dispose 중 예외 발생: {disposeEx.GetType().Name}: {disposeEx.Message}");
+            Console.Error.WriteLine(disposeEx.StackTrace);
         }
     }
 }
