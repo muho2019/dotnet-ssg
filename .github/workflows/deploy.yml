@@ -4,7 +4,7 @@ name: Deploy to muho2019.github.io
 on:
   # Runs on pushes targeting the mine branch
   push:
-    branches: ["mine"]
+    branches: ['mine']
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -15,7 +15,7 @@ permissions:
 
 # Allow only one concurrent deployment
 concurrency:
-  group: "deploy"
+  group: 'deploy'
   cancel-in-progress: false
 
 jobs:
@@ -24,15 +24,18 @@ jobs:
     steps:
       - name: Checkout source repository
         uses: actions/checkout@v4
-        
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "10.0.x"
-          
-      - name: Build static site
-        run: dotnet run --project src/DotnetSsg/DotnetSsg.csproj
-        
+          dotnet-version: '10.0.x'
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
       - name: Deploy to muho2019.github.io
         uses: peaceiris/actions-gh-pages@v3
         with:

@@ -5,7 +5,8 @@ namespace DotnetSsg.Services;
 
 public class SitemapGenerator
 {
-    public void Generate(SiteConfig config, List<ContentItem> contentItems, string outputDirectory, List<Post> posts, IEnumerable<string> tags)
+    public void Generate(SiteConfig config, List<ContentItem> contentItems, string outputDirectory, List<Post> posts,
+        IEnumerable<string> tags)
     {
         // Build sitemap items including home page and tag archives
         var sitemapItems = new List<ContentItem>(contentItems);
@@ -18,7 +19,7 @@ public class SitemapGenerator
             Url = "",
             Priority = 1.0,
             ChangeFrequency = "weekly",
-            SourcePath = Path.Combine(Path.GetDirectoryName(contentItems.First().SourcePath) ?? "", "..", "..", "templates", "index.liquid"),
+            SourcePath = "index.html",
             LastModified = DateTime.Now
         };
         sitemapItems.Add(homePage);
@@ -33,9 +34,9 @@ public class SitemapGenerator
                 Url = $"tags/{tag}/",
                 Priority = 0.6,
                 ChangeFrequency = "monthly",
-                SourcePath = Path.Combine(Path.GetDirectoryName(contentItems.First().SourcePath) ?? "", "..", "..", "templates", "tag_archive.liquid"),
+                SourcePath = $"tags/{tag}/index.html",
                 LastModified = posts
-                    .Where(p => p.Tags != null && p.Tags.Contains(tag))
+                    .Where(p => p.Tags.Contains(tag))
                     .Max(p => (DateTime?)p.Date) ?? DateTime.Now
             };
             sitemapItems.Add(tagPage);
@@ -53,26 +54,26 @@ public class SitemapGenerator
 
             sitemapContent.AppendLine("  <url>");
             sitemapContent.AppendLine($"    <loc>{XmlEscape(location)}</loc>");
-            
+
             // Add lastmod if available
             var lastMod = GetLastModifiedDate(item);
             if (lastMod != null)
             {
                 sitemapContent.AppendLine($"    <lastmod>{lastMod:yyyy-MM-ddTHH:mm:sszzz}</lastmod>");
             }
-            
+
             // Add changefreq
             if (!string.IsNullOrEmpty(item.ChangeFrequency))
             {
                 sitemapContent.AppendLine($"    <changefreq>{item.ChangeFrequency}</changefreq>");
             }
-            
+
             // Add priority
             if (item.Priority > 0)
             {
                 sitemapContent.AppendLine($"    <priority>{item.Priority:F1}</priority>");
             }
-            
+
             sitemapContent.AppendLine("  </url>");
         }
 
@@ -97,19 +98,15 @@ public class SitemapGenerator
         if (item is Page page && page.Date.HasValue)
             return page.Date.Value;
 
-        // Otherwise, try to get file modification time
-        if (File.Exists(item.SourcePath))
-            return File.GetLastWriteTime(item.SourcePath);
-
         return null;
     }
 
-    private static string XmlEscape(string unescaped)
+    private static string XmlEscape(string text)
     {
-        return unescaped.Replace("&", "&amp;")
-                      .Replace("'", "&apos;")
-                      .Replace("\"", "&quot;")
-                      .Replace(">", "&gt;")
-                      .Replace("<", "&lt;");
+        return text.Replace("&", "&amp;")
+            .Replace("<", "&lt;")
+            .Replace(">", "&gt;")
+            .Replace("\"", "&quot;")
+            .Replace("'", "&apos;");
     }
 }

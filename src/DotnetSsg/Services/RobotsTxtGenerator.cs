@@ -11,7 +11,7 @@ Allow: /
 
 Sitemap: {(config.BaseUrl.EndsWith("/") ? config.BaseUrl : config.BaseUrl + "/")}sitemap.xml
 ";
-        
+
         var robotsPath = Path.Combine(outputDirectory, "robots.txt");
         File.WriteAllText(robotsPath, robotsTxt);
         Console.WriteLine("robots.txt generated");

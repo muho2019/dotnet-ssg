@@ -1,0 +1,62 @@
+@* Notion 스타일 커버 이미지 (선택적) *@
+@if (!string.IsNullOrEmpty(Post.CoverImage))
+{
+    <div class="w-full h-60 md:h-80 overflow-hidden">
+        <img src="@Post.CoverImage" 
+             alt="@Post.Title" 
+             class="w-full h-full object-cover" />
+    </div>
+}
+
+@* Notion 스타일 콘텐츠 컨테이너 *@
+<article class="max-w-notion mx-auto px-6 md:px-24 py-12">
+    
+    @* 제목 (Notion 스타일 대형 제목) *@
+    <h1 class="text-notion-title mb-2 font-bold text-notion-text dark:text-notion-text-dark">
+        @Post.Title
+    </h1>
+    
+    @* 메타 정보 *@
+    <div class="flex flex-wrap items-center gap-4 text-sm text-notion-gray mb-8">
+        <time datetime="@Post.Date.ToString("yyyy-MM-dd")" class="flex items-center gap-1">
+            <span>📅</span>
+            <span>@Post.Date.ToString("yyyy년 MM월 dd일")</span>
+        </time>
+        
+        @if (Post.Tags.Any())
+        {
+            <div class="flex items-center gap-2">
+                <span>🏷️</span>
+                <div class="flex flex-wrap gap-2">
+                    @foreach (var tag in Post.Tags)
+                    {
+                        <a href="/tags/@tag/" 
+                           class="px-2 py-0.5 bg-notion-gray-light dark:bg-notion-gray-dark rounded text-xs hover:bg-notion-blue hover:text-white transition">
+                            @tag
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+    
+    @* 본문 (Notion 스타일 타이포그래피) *@
+    <div class="notion-content">
+        @((MarkupString)Post.HtmlContent)
+    </div>
+    
+    @* 구분선 *@
+    <div class="my-12 border-t border-notion-gray-light dark:border-notion-gray-dark"></div>
+    
+    @* 댓글 섹션 (미래 구현) *@
+    <div class="mt-12">
+        <h2 class="text-notion-h2 mb-6 font-semibold">💬 댓글</h2>
+        <p class="text-notion-gray">댓글 기능은 추후 추가 예정입니다.</p>
+    </div>
+    
+</article>
+
+@code {
+    [Parameter, EditorRequired]
+    public Post Post { get; set; } = null!;
+}

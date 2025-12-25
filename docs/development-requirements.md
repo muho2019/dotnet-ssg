@@ -18,7 +18,7 @@
 - **검증**: `.csproj` 파일의 `TargetFramework`이 `net10.0`(또는 이에 상응하는 .NET 10 버전)으로 설정되었는지 확인합니다.
 
 ### 1.2. NuGet 패키지 설치
-- **요구사항**: `docs/nuget-packages.md`에 명시된 모든 패키지(`Markdig`, `YamlDotNet`, `Scriban`)의 최신 안정 버전을 설치합니다.
+- **요구사항**: `docs/nuget-packages.md`에 명시된 모든 패키지(`Markdig`, `YamlDotNet`, `Microsoft.AspNetCore.Components.Web`, `Microsoft.Extensions.Logging.Console`)의 최신 안정 버전을 설치합니다.
 - **검증**: `.csproj` 파일에 해당 `PackageReference`가 올바르게 추가되었는지 확인합니다.
 
 ### 1.3. 데이터 모델 정의
@@ -72,15 +72,16 @@
 
 ## Phase 4: 템플릿 및 HTML 생성
 
-### 4.1. Scriban 템플릿 렌더링 서비스
-- **요구사항**: `TemplateRenderer` 서비스를 구현합니다. 이 서비스는 템플릿 경로와 C# 객체(데이터 모델)를 입력받아 렌더링된 HTML 문자열을 반환합니다.
-- **템플릿 로딩**: `templates` 디렉토리의 `.liquid` 파일을 읽고 캐싱하여, 동일한 템플릿을 반복적으로 읽지 않도록 최적화해야 합니다.
+### 4.1. Blazor 컴포넌트 렌더링 서비스
+- **요구사항**: `BlazorRenderer` 서비스를 구현합니다. 이 서비스는 Blazor 컴포넌트와 파라미터를 입력받아 정적 HTML 문자열을 반환합니다.
+- **컴포넌트 구조**: `Components` 디렉토리에 `.razor` 파일을 작성하며, Layout, Pages, Shared 등으로 구조화합니다.
+- **리소스 관리**: `HtmlRenderer`의 올바른 초기화 및 종료(Dispose)를 보장하여 메모리 누수를 방지합니다.
 
 ### 4.2. HTML 페이지 생성 및 저장
 - **요구사항**: 파싱된 각 `ContentItem`(`Post` 또는 `Page`) 객체에 대해 다음을 수행하는 `HtmlGenerator` 서비스를 구현합니다.
-  1. 콘텐츠 유형에 맞는 템플릿을 결정합니다. `Post` 객체는 `templates/post.liquid`를, `Page` 객체는 `templates/page.liquid`를 사용합니다.
-  2. `layout.liquid`를 기본 레이아웃으로 사용하며, `{{ content }}` 부분에 `post.liquid` 또는 `page.liquid`의 렌더링 결과가 삽입되어야 합니다.
-  3. `SiteConfig`와 개별 `ContentItem` 데이터를 모두 템플릿에 전달하여 최종 HTML을 생성합니다. (예: `site.title`, `post.title`, `post.html_content` 등으로 접근 가능)
+  1. 콘텐츠 유형에 맞는 Blazor 컴포넌트를 결정합니다. `Post` 객체는 `PostPage.razor`를, `Page` 객체는 `PageTemplate.razor`를 사용합니다.
+  2. `MainLayout.razor`를 기본 레이아웃으로 사용하며, `ChildContent`를 통해 각 페이지 컴포넌트를 렌더링합니다.
+  3. `SiteConfig`와 개별 `ContentItem` 데이터를 모두 컴포넌트 파라미터로 전달하여 최종 HTML을 생성합니다.
   4. 생성된 HTML을 올바른 출력 경로에 저장합니다. 출력 경로는 원본 파일 경로를 기반으로 생성됩니다.
      - `content/posts/my-first-post.md` -> `output/posts/my-first-post/index.html`
      - `content/about.md` -> `output/about/index.html`

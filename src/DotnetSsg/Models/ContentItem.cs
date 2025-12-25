@@ -17,9 +17,9 @@ public abstract class ContentItem
     public string? ImageAlt { get; set; }
 
     public string SourcePath { get; set; } = string.Empty;
-    
+
     public string OutputPath { get; set; } = string.Empty;
-    
+
     public string Url { get; set; } = string.Empty;
 
     public string HtmlContent { get; set; } = string.Empty;
@@ -38,4 +38,7 @@ public abstract class ContentItem
     /// Last modified date for sitemap. If null, will use file modification time or post date
     /// </summary>
     public DateTime? LastModified { get; set; }
+
+    // Notion 스타일 커버 이미지
+    public string? CoverImage { get; set; }
 }

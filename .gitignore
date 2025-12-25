@@ -499,3 +499,7 @@ FodyWeavers.xsd
 # End of https://www.toptal.com/developers/gitignore/api/macos,visualstudiocode,visualstudio,rider,dotnetcore
 
 /output/
+
+# Node
+node_modules/
+package-lock.json

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@Title</title>
+    <meta name="description" content="@Description">
+    
+    <!-- Notion 스타일 폰트 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link href="/static/css/style.css" rel="stylesheet">
+    <link rel="icon" href="/favicon.ico">
+    
+    <style>
+        body { font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    </style>
+</head>
+<body class="bg-white dark:bg-notion-bg-dark text-notion-text dark:text-notion-text-dark transition-colors">
+    
+    <!-- Notion 스타일 레이아웃 -->
+    <div class="flex flex-col min-h-screen">
+        
+        <!-- 모바일 헤더 (Header 컴포넌트 사용) -->
+        <Header SiteTitle="@SiteTitle" />
+        
+        <div class="flex flex-1">
+            <!-- 사이드바 (데스크톱) -->
+            <aside class="hidden md:flex w-60 border-r border-notion-gray-light dark:border-notion-gray-dark flex-col">
+                <div class="p-4">
+                    <a href="/" class="flex items-center gap-2 text-lg font-semibold hover:bg-notion-gray-light dark:hover:bg-notion-gray-dark rounded px-2 py-1 transition">
+                        <span>📝</span>
+                        <span>@SiteTitle</span>
+                    </a>
+                </div>
+                
+                <nav class="flex-1 px-2 py-4 space-y-1">
+                    <a href="/" class="flex items-center gap-2 px-2 py-1.5 text-sm rounded hover:bg-notion-gray-light dark:hover:bg-notion-gray-dark transition">
+                        <span>🏠</span>
+                        <span>홈</span>
+                    </a>
+                    <a href="/about" class="flex items-center gap-2 px-2 py-1.5 text-sm rounded hover:bg-notion-gray-light dark:hover:bg-notion-gray-dark transition">
+                        <span>👤</span>
+                        <span>소개</span>
+                    </a>
+                </nav>
+                
+                <div class="p-4 border-t border-notion-gray-light dark:border-notion-gray-dark">
+                    <button onclick="toggleDarkMode()" class="w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded hover:bg-notion-gray-light dark:hover:bg-notion-gray-dark transition">
+                        <span class="dark:hidden">🌙</span>
+                        <span class="hidden dark:inline">☀️</span>
+                        <span>테마 전환</span>
+                    </button>
+                </div>
+            </aside>
+            
+            <!-- 메인 콘텐츠 영역 -->
+            <main class="flex-1 overflow-y-auto">
+                @ChildContent
+            </main>
+        </div>
+        
+        <!-- Footer 컴포넌트 사용 -->
+        <Footer Author="@Author" RssUrl="/feed.xml" GithubUrl="@GithubUrl" />
+        
+    </div>
+    
+    <script>
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
+        }
+        
+        function toggleMobileMenu() {
+            // 모바일 메뉴 토글 로직 (나중에 구현 가능)
+            alert('모바일 메뉴 기능은 추후 구현 예정');
+        }
+        
+        // 저장된 테마 불러오기
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+</body>
+</html>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+    
+    [Parameter]
+    public string Description { get; set; } = string.Empty;
+    
+    [Parameter]
+    public string SiteTitle { get; set; } = string.Empty;
+    
+    [Parameter]
+    public string Author { get; set; } = string.Empty;
+    
+    [Parameter]
+    public string? GithubUrl { get; set; }
+}

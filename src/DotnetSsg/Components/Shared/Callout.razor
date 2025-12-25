@@ -1,0 +1,31 @@
+<div class="notion-callout @GetCalloutClass() flex gap-3 p-4 rounded-lg my-4">
+    <div class="text-2xl flex-shrink-0">
+        @Icon
+    </div>
+    <div class="flex-1">
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Type { get; set; } = "info"; // info, warning, error, success
+    
+    [Parameter]
+    public string Icon { get; set; } = "💡";
+    
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    private string GetCalloutClass()
+    {
+        return Type.ToLower() switch
+        {
+            "info" => "bg-blue-50 dark:bg-blue-900/20 border-l-4 border-notion-blue",
+            "warning" => "bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-notion-yellow",
+            "error" => "bg-red-50 dark:bg-red-900/20 border-l-4 border-notion-red",
+            "success" => "bg-green-50 dark:bg-green-900/20 border-l-4 border-notion-green",
+            _ => "bg-gray-50 dark:bg-gray-900/20 border-l-4 border-notion-gray"
+        };
+    }
+}
