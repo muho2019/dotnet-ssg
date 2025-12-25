@@ -39,7 +39,7 @@
   }
 
   /* 리스트 */
-  .notion-content ul, 
+  .notion-content ul,
   .notion-content ol {
     @apply ml-6 mb-4 space-y-1;
   }
@@ -66,13 +66,9 @@
     @apply bg-notion-gray-light dark:bg-notion-gray-dark px-1.5 py-0.5 rounded text-sm font-mono text-notion-red;
   }
 
-  /* 코드 블록 */
-  .notion-content pre {
+  /* 코드 블록 (일반, Prism.js 없는 경우) */
+  .notion-content pre:not([class*='language-']) {
     @apply bg-notion-gray-light dark:bg-notion-gray-dark rounded-lg p-4 my-4 overflow-x-auto;
-  }
-
-  .notion-content pre code {
-    @apply bg-transparent p-0 text-sm text-notion-text dark:text-notion-text-dark;
   }
 
   /* 이미지 */
@@ -96,5 +92,97 @@
   /* 구분선 */
   .notion-content hr {
     @apply my-8 border-t border-notion-gray-light dark:border-notion-gray-dark;
+  }
+
+  /* 코드 블록 (Prism.js 커스터마이징) */
+  .notion-content pre[class*='language-'] {
+    @apply rounded-lg my-6 shadow-sm border border-notion-gray-light dark:border-notion-gray-dark;
+    background: #2d2d2d !important;
+    padding: 1.5rem !important;
+    padding-left: 1rem !important;
+    overflow-x: auto;
+    position: relative;
+  }
+
+  /* 줄 번호가 있는 코드 블록은 왼쪽 패딩 추가 */
+  .notion-content pre[class*='language-'].line-numbers {
+    padding-left: 3.8em !important;
+    position: relative;
+  }
+
+  .notion-content pre[class*='language-'] code {
+    background: transparent !important;
+    padding: 0 !important;
+    font-size: 0.875rem;
+    line-height: 1.5 !important;
+    color: #ccc !important;
+  }
+
+  /* 라이트 모드 코드 블록 */
+  .notion-content pre[class*='language-']:not(.dark *) {
+    background: #f6f8fa !important;
+    border-color: #e1e4e8;
+  }
+
+  .notion-content pre[class*='language-']:not(.dark *) code {
+    color: #24292e !important;
+  }
+
+  /* 줄 번호 스타일 - 다크 모드 */
+  .notion-content .line-numbers .line-numbers-rows {
+    position: absolute;
+    pointer-events: none;
+    top: -2px;
+    left: -3.8em;
+    width: 3em;
+    letter-spacing: -1px;
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
+    user-select: none;
+  }
+
+  .notion-content .line-numbers .line-numbers-rows > span {
+    display: block;
+    counter-increment: linenumber;
+    line-height: 1.5;
+    height: 1.72em;
+  }
+
+  .notion-content .line-numbers .line-numbers-rows > span:before {
+    content: counter(linenumber);
+    color: rgba(255, 255, 255, 0.4);
+    display: block;
+    padding-right: 0.8em;
+    text-align: right;
+  }
+
+  /* 줄 번호 스타일 - 라이트 모드 */
+  .notion-content pre[class*='language-']:not(.dark *).line-numbers .line-numbers-rows {
+    border-right-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .notion-content pre[class*='language-']:not(.dark *).line-numbers .line-numbers-rows > span:before {
+    color: rgba(0, 0, 0, 0.4);
+  }
+
+  /* 라인 하이라이트 */
+  .notion-content .line-highlight {
+    background: rgba(255, 255, 255, 0.08) !important;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.1) 70%, rgba(255, 255, 255, 0)) !important;
+  }
+
+  /* 툴바 (언어 표시) */
+  .notion-content div.code-toolbar > .toolbar {
+    opacity: 1 !important;
+  }
+
+  .notion-content div.code-toolbar > .toolbar .toolbar-item {
+    margin-right: 0.5rem;
+  }
+
+  .notion-content div.code-toolbar > .toolbar button,
+  .notion-content div.code-toolbar > .toolbar span {
+    @apply bg-notion-gray-light dark:bg-notion-gray-dark px-2 py-1 rounded text-xs;
+    color: inherit !important;
+    box-shadow: none !important;
   }
 }

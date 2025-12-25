@@ -21,7 +21,17 @@ public class MarkdownParser
 
         var (frontMatter, markdownBody) = ExtractAndSeparateFrontMatter(fileContent);
 
-        var htmlContent = Markdown.ToHtml(markdownBody);
+        // Markdig 파이프라인 설정: GFM + 고급 기능
+        var pipeline = new MarkdownPipelineBuilder()
+            .UseAdvancedExtensions() // 테이블, 취소선, 자동링크 등
+            .UseGenericAttributes() // {.class} 문법 지원
+            .UsePipeTables() // 파이프 테이블
+            .UseTaskLists() // 체크박스 리스트
+            .UseAutoLinks() // 자동 링크 변환
+            .UseEmphasisExtras() // 굵게, 기울임 등
+            .Build();
+
+        var htmlContent = Markdown.ToHtml(markdownBody, pipeline);
 
         ContentItem item;
         var normalizedPath = filePath.Replace('\\', '/');
