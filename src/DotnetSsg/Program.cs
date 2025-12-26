@@ -71,7 +71,7 @@ try
     {
         try
         {
-            var contentItem = await markdownParser.ParseAsync(file, siteConfig.BaseUrl);
+            var contentItem = await markdownParser.ParseAsync(file);
             contentItems.Add(contentItem);
 
             await htmlGenerator.GenerateAsync(contentItem, siteConfig);

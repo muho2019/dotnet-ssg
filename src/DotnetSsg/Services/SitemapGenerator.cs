@@ -49,8 +49,9 @@ public class SitemapGenerator
 
         foreach (var item in sitemapItems)
         {
-            var baseUrl = config.BaseUrl.EndsWith("/") ? config.BaseUrl : config.BaseUrl + "/";
-            var location = new Uri(new Uri(baseUrl), item.Url.TrimStart('/')).ToString();
+            var location = config.BaseUri != null
+                ? new Uri(config.BaseUri, item.Url).ToString()
+                : item.Url;
 
             sitemapContent.AppendLine("  <url>");
             sitemapContent.AppendLine($"    <loc>{XmlEscape(location)}</loc>");

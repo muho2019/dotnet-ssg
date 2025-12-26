@@ -34,7 +34,8 @@ public class HtmlGenerator
                 ["SiteTitle"] = siteConfig.Title,
                 ["Author"] = siteConfig.Author,
                 ["GithubUrl"] = siteConfig.GithubUrl,
-                ["GoogleAnalyticsId"] = siteConfig.GoogleAnalyticsId
+                ["GoogleAnalyticsId"] = siteConfig.GoogleAnalyticsId,
+                ["BasePath"] = siteConfig.BasePath
             };
 
             fullHtml = await _blazorRenderer.RenderComponentAsync<MainLayout>(layoutParams);
@@ -55,7 +56,8 @@ public class HtmlGenerator
                 ["SiteTitle"] = siteConfig.Title,
                 ["Author"] = siteConfig.Author,
                 ["GithubUrl"] = siteConfig.GithubUrl,
-                ["GoogleAnalyticsId"] = siteConfig.GoogleAnalyticsId
+                ["GoogleAnalyticsId"] = siteConfig.GoogleAnalyticsId,
+                ["BasePath"] = siteConfig.BasePath
             };
 
             fullHtml = await _blazorRenderer.RenderComponentAsync<MainLayout>(layoutParams);
@@ -104,7 +106,8 @@ public class HtmlGenerator
             ["SiteTitle"] = siteConfig.Title,
             ["Author"] = siteConfig.Author,
             ["GithubUrl"] = siteConfig.GithubUrl,
-            ["GoogleAnalyticsId"] = siteConfig.GoogleAnalyticsId
+            ["GoogleAnalyticsId"] = siteConfig.GoogleAnalyticsId,
+            ["BasePath"] = siteConfig.BasePath
         };
 
         var fullHtml = await _blazorRenderer.RenderComponentAsync<MainLayout>(layoutParams);
@@ -132,7 +135,8 @@ public class HtmlGenerator
             ["SiteTitle"] = siteConfig.Title,
             ["Author"] = siteConfig.Author,
             ["GithubUrl"] = siteConfig.GithubUrl,
-            ["GoogleAnalyticsId"] = siteConfig.GoogleAnalyticsId
+            ["GoogleAnalyticsId"] = siteConfig.GoogleAnalyticsId,
+            ["BasePath"] = siteConfig.BasePath
         };
 
         var fullHtml = await _blazorRenderer.RenderComponentAsync<MainLayout>(layoutParams);

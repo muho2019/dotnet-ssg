@@ -30,11 +30,13 @@ public class RssFeedGenerator
         // Channel metadata
         writer.WriteElementString("title", config.Title);
         writer.WriteElementString("description", config.Description);
-        writer.WriteElementString("link", config.BaseUrl);
+        var baseUri = config.BaseUri;
+        writer.WriteElementString("link", baseUri?.ToString() ?? string.Empty);
 
         // Self link (Atom namespace)
+        var feedHref = baseUri != null ? new Uri(baseUri, "feed.xml").ToString() : "feed.xml";
         writer.WriteStartElement("atom", "link", "http://www.w3.org/2005/Atom");
-        writer.WriteAttributeString("href", $"{config.BaseUrl.TrimEnd('/')}/feed.xml");
+        writer.WriteAttributeString("href", feedHref);
         writer.WriteAttributeString("rel", "self");
         writer.WriteAttributeString("type", "application/rss+xml");
         writer.WriteEndElement();
@@ -54,7 +56,7 @@ public class RssFeedGenerator
 
             writer.WriteElementString("title", post.Title);
 
-            var postUrl = new Uri(new Uri(config.BaseUrl), post.Url.TrimStart('/')).ToString();
+            var postUrl = baseUri != null ? new Uri(baseUri, post.Url).ToString() : post.Url;
             writer.WriteElementString("link", postUrl);
             writer.WriteElementString("guid", postUrl);
 

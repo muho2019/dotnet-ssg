@@ -5,14 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@Title</title>
     <meta name="description" content="@Description">
+    <base href="@BasePath">
     
     <!-- Notion 스타일 폰트 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link href="/static/css/style.css" rel="stylesheet">
-    <link rel="icon" href="/favicon.ico">
+    <link href="static/css/style.css" rel="stylesheet">
+    <link rel="icon" href="favicon.ico">
     
     <!-- Prism.js 코드 하이라이팅 CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
@@ -48,18 +49,18 @@
             <!-- 사이드바 (데스크톱) -->
             <aside class="hidden md:flex w-60 border-r border-notion-gray-light dark:border-notion-gray-dark flex-col">
                 <div class="p-4">
-                    <a href="/" class="flex items-center gap-2 text-lg font-semibold hover:bg-notion-gray-light dark:hover:bg-notion-gray-dark rounded px-2 py-1 transition">
+                    <a href="" class="flex items-center gap-2 text-lg font-semibold hover:bg-notion-gray-light dark:hover:bg-notion-gray-dark rounded px-2 py-1 transition">
                         <span>📝</span>
                         <span>@SiteTitle</span>
                     </a>
                 </div>
                 
                 <nav class="flex-1 px-2 py-4 space-y-1">
-                    <a href="/" class="flex items-center gap-2 px-2 py-1.5 text-sm rounded hover:bg-notion-gray-light dark:hover:bg-notion-gray-dark transition">
+                    <a href="" class="flex items-center gap-2 px-2 py-1.5 text-sm rounded hover:bg-notion-gray-light dark:hover:bg-notion-gray-dark transition">
                         <span>🏠</span>
                         <span>홈</span>
                     </a>
-                    <a href="/about" class="flex items-center gap-2 px-2 py-1.5 text-sm rounded hover:bg-notion-gray-light dark:hover:bg-notion-gray-dark transition">
+                    <a href="about" class="flex items-center gap-2 px-2 py-1.5 text-sm rounded hover:bg-notion-gray-light dark:hover:bg-notion-gray-dark transition">
                         <span>👤</span>
                         <span>소개</span>
                     </a>
@@ -81,7 +82,7 @@
         </div>
         
         <!-- Footer 컴포넌트 사용 -->
-        <Footer Author="@Author" RssUrl="/feed.xml" GithubUrl="@GithubUrl" />
+        <Footer Author="@Author" RssUrl="feed.xml" GithubUrl="@GithubUrl" />
         
     </div>
     
@@ -134,4 +135,7 @@
     
     [Parameter]
     public string? GoogleAnalyticsId { get; set; }
+
+    [Parameter]
+    public string BasePath { get; set; } = "/";
 }
