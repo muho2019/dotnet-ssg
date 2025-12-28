@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace DotnetSsg.Models;
 
 public class SiteConfig
@@ -13,4 +15,32 @@ public class SiteConfig
     public string? TwitterCreator { get; set; }
     public string? GithubUrl { get; set; }
     public string? GoogleAnalyticsId { get; set; }
+
+    [JsonIgnore]
+    public string NormalizedBaseUrl => string.IsNullOrWhiteSpace(BaseUrl)
+        ? string.Empty
+        : (BaseUrl.EndsWith("/") ? BaseUrl : BaseUrl + "/");
+
+    [JsonIgnore]
+    public Uri? BaseUri => Uri.TryCreate(NormalizedBaseUrl, UriKind.Absolute, out var uri) ? uri : null;
+
+    [JsonIgnore]
+    public string BasePath
+    {
+        get
+        {
+            if (BaseUri == null)
+            {
+                return "/";
+            }
+
+            var path = BaseUri.AbsolutePath;
+            if (string.IsNullOrEmpty(path))
+            {
+                return "/";
+            }
+
+            return path.EndsWith("/") ? path : path + "/";
+        }
+    }
 }

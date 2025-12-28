@@ -15,13 +15,23 @@ public class MarkdownParser
         _yamlDeserializer = new DeserializerBuilder().Build();
     }
 
-    public async Task<ContentItem> ParseAsync(string filePath, string baseUrl)
+    public async Task<ContentItem> ParseAsync(string filePath)
     {
         var fileContent = await File.ReadAllTextAsync(filePath);
 
         var (frontMatter, markdownBody) = ExtractAndSeparateFrontMatter(fileContent);
 
-        var htmlContent = Markdown.ToHtml(markdownBody);
+        // Markdig 파이프라인 설정: GFM + 고급 기능
+        var pipeline = new MarkdownPipelineBuilder()
+            .UseAdvancedExtensions() // 테이블, 취소선, 자동링크 등
+            .UseGenericAttributes() // {.class} 문법 지원
+            .UsePipeTables() // 파이프 테이블
+            .UseTaskLists() // 체크박스 리스트
+            .UseAutoLinks() // 자동 링크 변환
+            .UseEmphasisExtras() // 굵게, 기울임 등
+            .Build();
+
+        var htmlContent = Markdown.ToHtml(markdownBody, pipeline);
 
         ContentItem item;
         var normalizedPath = filePath.Replace('\\', '/');
@@ -79,7 +89,7 @@ public class MarkdownParser
 
         item.SourcePath = filePath;
         item.HtmlContent = htmlContent;
-        item.Url = GenerateUrl(filePath, baseUrl);
+        item.Url = GenerateUrl(filePath);
         item.OutputPath = GenerateOutputPath(filePath);
 
         return item;
@@ -102,21 +112,30 @@ public class MarkdownParser
         return System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(fileName.Replace('-', ' '));
     }
 
-    private string GenerateUrl(string filePath, string baseUrl)
+    private string GenerateUrl(string filePath)
     {
         var relativePath = Path.GetRelativePath("content", filePath);
-        var url = string.Concat(baseUrl, "/",
-            relativePath.Replace(Path.DirectorySeparatorChar, '/').Replace(".md", string.Empty));
+        var directory = Path.GetDirectoryName(relativePath) ?? string.Empty;
+        var normalizedDirectory = directory.Replace(Path.DirectorySeparatorChar, '/');
+        var fileName = Path.GetFileNameWithoutExtension(relativePath);
 
-        if (Path.GetFileNameWithoutExtension(filePath).Equals("index", StringComparison.OrdinalIgnoreCase))
+        if (fileName.Equals("index", StringComparison.OrdinalIgnoreCase))
         {
-            // For "content/index.md", url becomes "" -> "/"
-            // For "content/posts/index.md", url becomes "posts" -> "/posts/"
-            return string.IsNullOrEmpty(url) ? "" : url + "/";
+            if (string.IsNullOrEmpty(normalizedDirectory))
+            {
+                return string.Empty;
+            }
+
+            return normalizedDirectory.EndsWith("/")
+                ? normalizedDirectory
+                : normalizedDirectory + "/";
         }
 
-        // For "content/posts/my-post.md", url becomes "posts/my-post" -> "/posts/my-post/"
-        return url + "/";
+        var prefix = string.IsNullOrEmpty(normalizedDirectory)
+            ? string.Empty
+            : (normalizedDirectory.EndsWith("/") ? normalizedDirectory : normalizedDirectory + "/");
+
+        return prefix + fileName + "/";
     }
 
     private string GenerateOutputPath(string filePath)

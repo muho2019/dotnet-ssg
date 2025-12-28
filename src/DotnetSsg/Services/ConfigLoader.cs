@@ -26,8 +26,9 @@ public class ConfigLoader
             });
             if (config != null)
             {
-                config.BaseUrl = config.BaseUrl?.TrimEnd('/') ?? string.Empty;
+                config.BaseUrl = config.BaseUrl?.Trim().TrimEnd('/') ?? string.Empty;
             }
+
             return config ?? new SiteConfig();
         }
         catch (JsonException ex)

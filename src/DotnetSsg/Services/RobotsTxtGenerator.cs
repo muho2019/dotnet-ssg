@@ -6,10 +6,14 @@ public class RobotsTxtGenerator
 {
     public void Generate(SiteConfig config, string outputDirectory)
     {
+        var sitemapUrl = config.BaseUri != null
+            ? new Uri(config.BaseUri, "sitemap.xml").ToString()
+            : "sitemap.xml";
+
         var robotsTxt = $@"User-agent: *
 Allow: /
 
-Sitemap: {(config.BaseUrl.EndsWith("/") ? config.BaseUrl : config.BaseUrl + "/")}sitemap.xml
+Sitemap: {sitemapUrl}
 ";
 
         var robotsPath = Path.Combine(outputDirectory, "robots.txt");
