@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>404 - 페이지를 찾을 수 없습니다</title>
+    <meta name="description" content="요청하신 페이지를 찾을 수 없습니다." />
+
+    <!-- Notion 스타일 폰트 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <link href="static/css/style.css" rel="stylesheet" />
+    <link rel="icon" href="favicon.ico" />
+
+    <style>
+      body {
+        font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+      .error-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        background: white;
+      }
+      .error-content {
+        text-align: center;
+        max-width: 600px;
+      }
+      .error-code {
+        font-size: 8rem;
+        font-weight: 700;
+        color: #2eaadc;
+        line-height: 1;
+        margin-bottom: 1rem;
+      }
+      .error-title {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #37352f;
+        margin-bottom: 1rem;
+      }
+      .error-description {
+        font-size: 1.125rem;
+        color: #787774;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+      }
+      .error-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+      }
+      .btn-primary {
+        background: #2eaadc;
+        color: white;
+      }
+      .btn-primary:hover {
+        background: #2596c4;
+      }
+      .btn-secondary {
+        background: #f7f6f3;
+        color: #37352f;
+      }
+      .btn-secondary:hover {
+        background: #ebeae6;
+      }
+      @media (prefers-color-scheme: dark) {
+        .error-container {
+          background: #191919;
+        }
+        .error-title {
+          color: #ffffff;
+        }
+        .error-description {
+          color: #9b9a97;
+        }
+        .btn-secondary {
+          background: #2f2f2f;
+          color: #ffffff;
+        }
+        .btn-secondary:hover {
+          background: #3f3f3f;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="error-container">
+      <div class="error-content">
+        <div class="error-code">404</div>
+        <h1 class="error-title">페이지를 찾을 수 없습니다</h1>
+        <p class="error-description">
+          죄송합니다. 요청하신 페이지가 존재하지 않거나 이동되었습니다.<br />
+          주소를 다시 확인하시거나 아래 링크를 통해 다른 페이지로 이동해주세요.
+        </p>
+        <div class="error-actions">
+          <a href="/" class="btn btn-primary">
+            <span>🏠</span>
+            <span>홈으로 돌아가기</span>
+          </a>
+          <a href="javascript:history.back()" class="btn btn-secondary">
+            <span>←</span>
+            <span>이전 페이지</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

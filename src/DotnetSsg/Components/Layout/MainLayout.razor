@@ -4,8 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@Title</title>
-    <meta name="description" content="@Description">
-    <base href="@BasePath">
+    <meta name="description" content="@Description">    
+    @* Canonical URL *@
+    @if (!string.IsNullOrEmpty(CanonicalUrl))
+    {
+        <link rel="canonical" href="@CanonicalUrl" />
+    }
+    
+    @* RSS Feed Auto-Discovery *@
+    <link rel="alternate" type="application/rss+xml" title="@SiteTitle RSS Feed" href="@(BasePath)feed.xml" />
+    
+    @* Open Graph Tags *@
+    <meta property="og:type" content="@OgType" />
+    <meta property="og:title" content="@Title" />
+    <meta property="og:description" content="@Description" />
+    @if (!string.IsNullOrEmpty(CanonicalUrl))
+    {
+        <meta property="og:url" content="@CanonicalUrl" />
+    }
+    @if (!string.IsNullOrEmpty(OgImage))
+    {
+        <meta property="og:image" content="@OgImage" />
+        @if (!string.IsNullOrEmpty(OgImageAlt))
+        {
+            <meta property="og:image:alt" content="@OgImageAlt" />
+        }
+    }
+    <meta property="og:site_name" content="@SiteTitle" />
+    
+    @* Twitter Card Tags *@
+    <meta name="twitter:card" content="@TwitterCardType" />
+    <meta name="twitter:title" content="@Title" />
+    <meta name="twitter:description" content="@Description" />
+    @if (!string.IsNullOrEmpty(OgImage))
+    {
+        <meta name="twitter:image" content="@OgImage" />
+        @if (!string.IsNullOrEmpty(OgImageAlt))
+        {
+            <meta name="twitter:image:alt" content="@OgImageAlt" />
+        }
+    }
+    @if (!string.IsNullOrEmpty(TwitterSite))
+    {
+        <meta name="twitter:site" content="@TwitterSite" />
+    }
+    @if (!string.IsNullOrEmpty(TwitterCreator))
+    {
+        <meta name="twitter:creator" content="@TwitterCreator" />
+    }    <base href="@BasePath">
     
     <!-- Notion 스타일 폰트 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,6 +82,14 @@
             gtag('config', '@GoogleAnalyticsId');
         </script>
     }
+    
+    @* Structured Data (JSON-LD) *@
+    @if (!string.IsNullOrEmpty(StructuredData))
+    {
+        <script type="application/ld+json">
+            @((MarkupString)StructuredData)
+        </script>
+    }
 </head>
 <body class="bg-white dark:bg-notion-bg-dark text-notion-text dark:text-notion-text-dark transition-colors">
     
@@ -43,7 +97,7 @@
     <div class="flex flex-col min-h-screen">
         
         <!-- 모바일 헤더 (Header 컴포넌트 사용) -->
-        <Header SiteTitle="@SiteTitle" />
+        <Header SiteTitle="@SiteTitle"></Header>
         
         <div class="flex flex-1">
             <!-- 사이드바 (데스크톱) -->
@@ -82,7 +136,7 @@
         </div>
         
         <!-- Footer 컴포넌트 사용 -->
-        <Footer Author="@Author" RssUrl="feed.xml" GithubUrl="@GithubUrl" />
+        <Footer Author="@Author" RssUrl="feed.xml" GithubUrl="@GithubUrl"></Footer>
         
     </div>
     
@@ -117,25 +171,49 @@
 @code {
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
-    
+
     [Parameter]
     public string Title { get; set; } = string.Empty;
-    
+
     [Parameter]
     public string Description { get; set; } = string.Empty;
-    
+
     [Parameter]
     public string SiteTitle { get; set; } = string.Empty;
-    
+
     [Parameter]
     public string Author { get; set; } = string.Empty;
-    
+
     [Parameter]
     public string? GithubUrl { get; set; }
-    
+
     [Parameter]
     public string? GoogleAnalyticsId { get; set; }
 
     [Parameter]
     public string BasePath { get; set; } = "/";
+    
+    [Parameter]
+    public string? CanonicalUrl { get; set; }
+    
+    [Parameter]
+    public string OgType { get; set; } = "website";
+    
+    [Parameter]
+    public string? OgImage { get; set; }
+    
+    [Parameter]
+    public string OgImageAlt { get; set; } = string.Empty;
+    
+    [Parameter]
+    public string TwitterCardType { get; set; } = "summary";
+    
+    [Parameter]
+    public string? TwitterSite { get; set; }
+    
+    [Parameter]
+    public string? TwitterCreator { get; set; }
+    
+    [Parameter]
+    public string? StructuredData { get; set; }
 }

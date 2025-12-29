@@ -46,14 +46,15 @@ try
     Console.WriteLine("📁 정적 파일 복사 중...");
     staticFileCopier.Copy(staticDir, Path.Combine(outputDir, "static"));
 
-    // Favicon 복사
-    string[] faviconFiles = ["favicon.ico"];
-    foreach (var faviconFile in faviconFiles)
+    // Favicon 및 기타 정적 파일 복사
+    string[] staticFiles = ["favicon.ico", "404.html"];
+    foreach (var staticFile in staticFiles)
     {
-        var sourcePath = Path.Combine(contentDir, faviconFile);
+        var sourcePath = Path.Combine(contentDir, staticFile);
         if (File.Exists(sourcePath))
         {
-            File.Copy(sourcePath, Path.Combine(outputDir, faviconFile), true);
+            File.Copy(sourcePath, Path.Combine(outputDir, staticFile), true);
+            Console.WriteLine($"Copied: {staticFile}");
         }
     }
 
