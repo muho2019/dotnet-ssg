@@ -11,8 +11,9 @@
 
 @* Notion 스타일 콘텐츠 컨테이너 *@
 <article class="max-w-notion mx-auto px-6 md:px-24 py-12">
-    
-    @* 제목 (Notion 스타일 대형 제목) *@
+        @* Breadcrumb Navigation *@
+    <Breadcrumb Items="@BreadcrumbItems" />
+        @* 제목 (Notion 스타일 대형 제목) *@
     <h1 class="text-notion-title mb-2 font-bold text-notion-text dark:text-notion-text-dark">
         @Post.Title
     </h1>
@@ -60,4 +61,11 @@
 @code {
     [Parameter, EditorRequired]
     public Post Post { get; set; } = null!;
+    
+    private List<Breadcrumb.BreadcrumbItem> BreadcrumbItems => new()
+    {
+        new Breadcrumb.BreadcrumbItem { Title = "홈", Url = "/" },
+        new Breadcrumb.BreadcrumbItem { Title = "포스트", Url = "" },
+        new Breadcrumb.BreadcrumbItem { Title = Post.Title, Url = Post.Url }
+    };
 }

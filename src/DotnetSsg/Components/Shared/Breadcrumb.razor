@@ -1,0 +1,46 @@
+@* Breadcrumb Navigation Component *@
+<nav aria-label="Breadcrumb" class="mb-6">
+    <ol class="flex items-center gap-2 text-sm text-notion-gray" itemscope itemtype="https://schema.org/BreadcrumbList">
+        @for (int i = 0; i < Items.Count; i++)
+        {
+            var item = Items[i];
+            var isLast = i == Items.Count - 1;
+            var position = i + 1;
+            
+            <li class="flex items-center gap-2" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                @if (isLast)
+                {
+                    <span class="text-notion-text dark:text-notion-text-dark font-medium" itemprop="name">@item.Title</span>
+                    <meta itemprop="position" content="@position" />
+                }
+                else if (string.IsNullOrWhiteSpace(item.Url))
+                {
+                    <span class="text-notion-gray" itemprop="name">@item.Title</span>
+                    <meta itemprop="position" content="@position" />
+                    <span class="text-notion-gray-light dark:text-notion-gray-dark">›</span>
+                }
+                else
+                {
+                    <a href="@item.Url" 
+                       class="hover:text-notion-blue transition" 
+                       itemprop="item">
+                        <span itemprop="name">@item.Title</span>
+                    </a>
+                    <meta itemprop="position" content="@position" />
+                    <span class="text-notion-gray-light dark:text-notion-gray-dark">›</span>
+                }
+            </li>
+        }
+    </ol>
+</nav>
+
+@code {
+    [Parameter, EditorRequired]
+    public List<BreadcrumbItem> Items { get; set; } = new();
+    
+    public class BreadcrumbItem
+    {
+        public string Title { get; set; } = string.Empty;
+        public string Url { get; set; } = string.Empty;
+    }
+}
