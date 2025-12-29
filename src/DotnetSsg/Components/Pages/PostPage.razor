@@ -4,23 +4,25 @@
     <div class="w-full h-60 md:h-80 overflow-hidden">
         <img src="@Post.CoverImage" 
              alt="@Post.Title" 
+             loading="lazy"
              class="w-full h-full object-cover" />
     </div>
 }
 
 @* Notion 스타일 콘텐츠 컨테이너 *@
 <article class="max-w-notion mx-auto px-6 md:px-24 py-12">
-    
-    @* 제목 (Notion 스타일 대형 제목) *@
+        @* Breadcrumb Navigation *@
+    <Breadcrumb Items="@BreadcrumbItems" />
+        @* 제목 (Notion 스타일 대형 제목) *@
     <h1 class="text-notion-title mb-2 font-bold text-notion-text dark:text-notion-text-dark">
         @Post.Title
     </h1>
     
     @* 메타 정보 *@
     <div class="flex flex-wrap items-center gap-4 text-sm text-notion-gray mb-8">
-        <time datetime="@Post.Date.ToString("yyyy-MM-dd")" class="flex items-center gap-1">
+        <time datetime="@Post.Date.ToString("yyyy-MM-dd HH:mm")" class="flex items-center gap-1">
             <span>📅</span>
-            <span>@Post.Date.ToString("yyyy년 MM월 dd일")</span>
+            <span>@Post.Date.ToString("yyyy년 MM월 dd일 HH시 mm분")</span>
         </time>
         
         @if (Post.Tags.Any())
@@ -59,4 +61,11 @@
 @code {
     [Parameter, EditorRequired]
     public Post Post { get; set; } = null!;
+    
+    private List<Breadcrumb.BreadcrumbItem> BreadcrumbItems => new()
+    {
+        new Breadcrumb.BreadcrumbItem { Title = "홈", Url = "/" },
+        new Breadcrumb.BreadcrumbItem { Title = "포스트", Url = "" },
+        new Breadcrumb.BreadcrumbItem { Title = Post.Title, Url = Post.Url }
+    };
 }

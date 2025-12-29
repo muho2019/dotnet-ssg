@@ -10,6 +10,31 @@ public abstract class ContentItem
     [YamlMember(Alias = "description")]
     public string? Description { get; set; }
 
+    /// <summary>
+    /// Get optimized description for SEO (max 160 characters for desktop, 120 for mobile)
+    /// </summary>
+    [YamlIgnore]
+    public string OptimizedDescription
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(Description))
+                return string.Empty;
+
+            const int maxLength = 160;
+            if (Description.Length <= maxLength)
+                return Description;
+
+            // Truncate at word boundary
+            var truncated = Description.Substring(0, maxLength);
+            var lastSpace = truncated.LastIndexOf(' ');
+            if (lastSpace > 0)
+                truncated = truncated.Substring(0, lastSpace);
+
+            return truncated + "...";
+        }
+    }
+
     [YamlMember(Alias = "image")]
     public string? Image { get; set; }
 

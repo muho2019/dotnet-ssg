@@ -46,23 +46,16 @@ try
     Console.WriteLine("📁 정적 파일 복사 중...");
     staticFileCopier.Copy(staticDir, Path.Combine(outputDir, "static"));
 
-    // Favicon 및 기타 루트 파일 복사 (content 폴더의 파일들을 output 루트로)
-    string[] rootFiles = ["favicon.ico"];
-    foreach (var rootFile in rootFiles)
+    // Favicon 및 기타 정적 파일 복사
+    string[] staticFiles = ["favicon.ico", "404.html", "googlecff6e1e7c6c65990.html"];
+    foreach (var staticFile in staticFiles)
     {
-        var sourcePath = Path.Combine(contentDir, rootFile);
+        var sourcePath = Path.Combine(contentDir, staticFile);
         if (File.Exists(sourcePath))
         {
-            File.Copy(sourcePath, Path.Combine(outputDir, rootFile), true);
+            File.Copy(sourcePath, Path.Combine(outputDir, staticFile), true);
+            Console.WriteLine($"Copied: {staticFile}");
         }
-    }
-
-    // Google Search Console 확인 파일 등 HTML 파일 복사
-    var htmlFiles = Directory.GetFiles(contentDir, "*.html");
-    foreach (var htmlFile in htmlFiles)
-    {
-        var fileName = Path.GetFileName(htmlFile);
-        File.Copy(htmlFile, Path.Combine(outputDir, fileName), true);
     }
 
     // 4. 콘텐츠 스캔
