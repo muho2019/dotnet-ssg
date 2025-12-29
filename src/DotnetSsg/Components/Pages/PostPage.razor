@@ -18,9 +18,9 @@
     
     @* 메타 정보 *@
     <div class="flex flex-wrap items-center gap-4 text-sm text-notion-gray mb-8">
-        <time datetime="@Post.Date.ToString("yyyy-MM-dd")" class="flex items-center gap-1">
+        <time datetime="@Post.Date.ToString("yyyy-MM-dd HH:mm")" class="flex items-center gap-1">
             <span>📅</span>
-            <span>@Post.Date.ToString("yyyy년 MM월 dd일")</span>
+            <span>@Post.Date.ToString("yyyy년 MM월 dd일 HH시 mm분")</span>
         </time>
         
         @if (Post.Tags.Any())
