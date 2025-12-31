@@ -5,11 +5,26 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <AssemblyName>dotnet-ssg</AssemblyName>
+    
+    <!-- dotnet tool 패키징 설정 -->
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>dotnet-ssg</ToolCommandName>
+    <PackageId>dotnet-ssg</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>muho</Authors>
+    <Description>.NET 기반 정적 사이트 생성기 (Static Site Generator)</Description>
+    <PackageTags>ssg;static-site-generator;blazor;markdown</PackageTags>
+    <PackageProjectUrl>https://github.com/muho2019/dotnet-ssg</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/muho2019/dotnet-ssg</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Markdig" Version="0.44.0" />
     <PackageReference Include="YamlDotNet" Version="16.3.0" />
+    <PackageReference Include="System.CommandLine" Version="2.0.1" />
     <!-- Blazor 렌더링을 위한 패키지 -->
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.1" />
