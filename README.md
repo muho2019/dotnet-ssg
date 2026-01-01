@@ -42,29 +42,38 @@
 
 ## 🚀 빠른 시작
 
-### 1. 저장소 클론
+### 옵션 1: 저장소 클론하여 사용
 
 ```bash
+# 1. 저장소 클론
 git clone https://github.com/muho2019/dotnet-ssg.git
 cd dotnet-ssg
-```
 
-### 2. 의존성 설치
-
-```bash
+# 2. 의존성 설치
 npm install
-```
 
-### 3. 사이트 빌드
+# 3. 사이트 빌드
+dotnet run --project src/DotnetSsg -- build
 
-```bash
-npm run build
-```
-
-### 4. 로컬 서버 실행
-
-```bash
+# 4. 로컬 서버 실행
 npm run serve
+```
+
+### 옵션 2: dotnet tool로 설치 (권장)
+
+```bash
+# 전역 도구로 설치
+dotnet tool install --global dotnet-ssg
+
+# 새 프로젝트 생성
+dotnet-ssg init my-blog
+cd my-blog
+
+# 의존성 설치
+npm install
+
+# 사이트 빌드
+dotnet-ssg build
 ```
 
 브라우저에서 `http://localhost:8000`으로 접속하세요!
@@ -90,6 +99,53 @@ dotnet-ssg/
 ├── output/                 # 빌드 결과물 (배포용)
 ├── config.json             # 사이트 설정
 └── docs/                   # 문서
+```
+
+---
+
+## 🔧 CLI 명령어
+
+### 기본 명령어
+
+```bash
+# 사이트 빌드
+dotnet-ssg build
+
+# 출력 디렉토리 지정
+dotnet-ssg build --output dist
+
+# Draft 포스트 포함하여 빌드
+dotnet-ssg build --drafts
+
+# 출력 디렉토리 정리
+dotnet-ssg clean
+```
+
+### 콘텐츠 생성
+
+```bash
+# 새 블로그 포스트 생성
+dotnet-ssg new post "제목"
+
+# Draft로 포스트 생성
+dotnet-ssg new post "제목" --draft
+
+# 특정 날짜로 포스트 생성
+dotnet-ssg new post "제목" --date 2026-01-01
+
+# 새 페이지 생성
+dotnet-ssg new page "About"
+```
+
+### 프로젝트 초기화
+
+```bash
+# 새 프로젝트 생성
+dotnet-ssg init my-blog
+
+# 도움말 보기
+dotnet-ssg --help
+dotnet-ssg build --help
 ```
 
 ---
@@ -168,10 +224,14 @@ description: '저에 대해 소개합니다.'
 
 자세한 개발 계획은 [로드맵 문서](docs/roadmap.md)를 참조하세요.
 
+### ✅ 구현 완료
+
+- ✅ CLI 도구 (`dotnet-ssg build`, `new`, `init`, `clean`)
+- ✅ Tailwind CSS 자동 빌드 통합
+
 ### 예정된 기능
 
-- 🔧 CLI 도구 (`dotnet tool install -g dotnet-ssg`)
-- 🔥 Hot Reload 개발 서버
+- 🔥 Hot Reload 개발 서버 (`dotnet-ssg serve`)
 - 📄 페이지네이션
 - 🎨 테마 시스템
 - 🔍 클라이언트 사이드 검색
