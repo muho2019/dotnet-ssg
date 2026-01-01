@@ -51,7 +51,58 @@ public static class BuildCommand
             var workingDirectory = Directory.GetCurrentDirectory();
             var buildService = new BuildService();
             var success = await buildService.BuildAsync(workingDirectory, output, drafts);
+
+            if (success)
+            {
+                // Tailwind CSS 빌드
+                await BuildTailwindCssAsync(workingDirectory);
+            }
+
             return success ? 0 : 1;
+        }
+
+        private static async Task BuildTailwindCssAsync(string workingDirectory)
+        {
+            try
+            {
+                Console.WriteLine("🎨 Tailwind CSS 빌드 중...");
+
+                var isWindows = Environment.OSVersion.Platform == PlatformID.Win32NT;
+
+                var processInfo = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = isWindows ? "powershell.exe" : "npm",
+                    Arguments = isWindows ? "-NoProfile -Command \"npm run css:build\"" : "run css:build",
+                    WorkingDirectory = workingDirectory,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                };
+
+                using var process = System.Diagnostics.Process.Start(processInfo);
+                if (process == null)
+                {
+                    Console.WriteLine("⚠️ npm을 실행할 수 없습니다. Tailwind CSS 빌드를 건너뜁니다.");
+                    return;
+                }
+
+                await process.WaitForExitAsync();
+
+                if (process.ExitCode == 0)
+                {
+                    Console.WriteLine("✅ Tailwind CSS 빌드 완료");
+                }
+                else
+                {
+                    var error = await process.StandardError.ReadToEndAsync();
+                    Console.WriteLine($"⚠️ Tailwind CSS 빌드 실패: {error}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ Tailwind CSS 빌드 중 오류: {ex.Message}");
+            }
         }
     }
 }
