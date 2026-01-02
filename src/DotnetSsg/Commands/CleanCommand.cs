@@ -40,9 +40,34 @@ public static class CleanCommand
 
             if (Directory.Exists(outputPath))
             {
-                Console.WriteLine($"🗑️ {outputPath} 디렉토리를 정리합니다...");
-                Directory.Delete(outputPath, true);
-                Console.WriteLine("✅ 정리가 완료되었습니다.");
+                try
+                {
+                    Console.WriteLine($"🗑️ {outputPath} 디렉토리를 정리합니다...");
+                    Directory.Delete(outputPath, true);
+                    Console.WriteLine("✅ 정리가 완료되었습니다.");
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"❌ 디렉토리 삭제 권한이 없습니다: {ex.Message}");
+                    Console.ResetColor();
+                    return 1;
+                }
+                catch (IOException ex)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"❌ 디렉토리 정리 중 오류가 발생했습니다: {ex.Message}");
+                    Console.WriteLine("   파일이 사용 중이거나 잠겨있을 수 있습니다.");
+                    Console.ResetColor();
+                    return 1;
+                }
+                catch (Exception ex)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"❌ 디렉토리 정리 중 예상치 못한 오류가 발생했습니다: {ex.Message}");
+                    Console.ResetColor();
+                    return 1;
+                }
             }
             else
             {

@@ -1,6 +1,8 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace DotnetSsg.Commands;
 
@@ -14,16 +16,9 @@ public static class InitCommand
             DefaultValueFactory = _ => "my-blog"
         };
 
-        var templateOption = new Option<string>("--template", "-t")
-        {
-            Description = "사용할 템플릿 (기본값: blog)",
-            DefaultValueFactory = _ => "blog"
-        };
-
         var command = new Command("init", "새 dotnet-ssg 프로젝트를 초기화합니다")
         {
-            nameArgument,
-            templateOption
+            nameArgument
         };
 
         command.Action = new SynchronousInitAction(nameArgument);
@@ -43,65 +38,120 @@ public static class InitCommand
         public override int Invoke(ParseResult parseResult)
         {
             var name = parseResult.GetValue(_nameArgument)!;
+
+            // 프로젝트 이름 검증 (경로 조작 방지)
+            if (!IsValidProjectName(name))
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("❌ 잘못된 프로젝트 이름입니다.");
+                Console.WriteLine("   프로젝트 이름은 영문, 숫자, 하이픈, 언더스코어만 사용할 수 있습니다.");
+                Console.ResetColor();
+                return 1;
+            }
+
             var workingDirectory = Directory.GetCurrentDirectory();
             var projectPath = Path.Combine(workingDirectory, name);
 
             if (Directory.Exists(projectPath))
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"❌ 디렉토리가 이미 존재합니다: {projectPath}");
+                Console.ResetColor();
                 return 1;
             }
 
-            Console.WriteLine($"🚀 새 프로젝트를 생성합니다: {name}");
+            try
+            {
+                Console.WriteLine($"🚀 새 프로젝트를 생성합니다: {name}");
 
-            // 프로젝트 디렉토리 구조 생성
-            Directory.CreateDirectory(projectPath);
-            Directory.CreateDirectory(Path.Combine(projectPath, "content"));
-            Directory.CreateDirectory(Path.Combine(projectPath, "content", "posts"));
-            Directory.CreateDirectory(Path.Combine(projectPath, "content", "static"));
-            Directory.CreateDirectory(Path.Combine(projectPath, "content", "static", "css"));
-            Directory.CreateDirectory(Path.Combine(projectPath, "content", "static", "images"));
+                // 프로젝트 디렉토리 구조 생성
+                Directory.CreateDirectory(projectPath);
+                Directory.CreateDirectory(Path.Combine(projectPath, "content"));
+                Directory.CreateDirectory(Path.Combine(projectPath, "content", "posts"));
+                Directory.CreateDirectory(Path.Combine(projectPath, "content", "static"));
+                Directory.CreateDirectory(Path.Combine(projectPath, "content", "static", "css"));
+                Directory.CreateDirectory(Path.Combine(projectPath, "content", "static", "images"));
 
-            // config.json 생성
-            CreateConfigFile(projectPath, name);
+                // config.json 생성
+                CreateConfigFile(projectPath, name);
 
-            // 샘플 포스트 생성
-            CreateSamplePost(projectPath);
+                // 샘플 포스트 생성
+                CreateSamplePost(projectPath);
 
-            // About 페이지 생성
-            CreateAboutPage(projectPath);
+                // About 페이지 생성
+                CreateAboutPage(projectPath);
 
-            // 404 페이지 생성
-            Create404Page(projectPath);
+                // 404 페이지 생성
+                Create404Page(projectPath);
 
-            // README.md 생성
-            CreateReadme(projectPath, name);
+                // README.md 생성
+                CreateReadme(projectPath, name);
 
-            // .gitignore 생성
-            CreateGitignore(projectPath);
+                // .gitignore 생성
+                CreateGitignore(projectPath);
 
-            Console.WriteLine($"✅ 프로젝트가 성공적으로 생성되었습니다: {projectPath}");
-            Console.WriteLine();
-            Console.WriteLine("다음 명령어로 시작하세요:");
-            Console.WriteLine($"  cd {name}");
-            Console.WriteLine("  dotnet-ssg build");
-            return 0;
+                Console.WriteLine($"✅ 프로젝트가 성공적으로 생성되었습니다: {projectPath}");
+                Console.WriteLine();
+                Console.WriteLine("다음 명령어로 시작하세요:");
+                Console.WriteLine($"  cd {name}");
+                Console.WriteLine("  dotnet-ssg build");
+                return 0;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"❌ 파일 또는 디렉터리에 접근할 수 없습니다: {ex.Message}");
+                Console.ResetColor();
+                return 1;
+            }
+            catch (IOException ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"❌ 파일 시스템 오류로 인해 프로젝트 생성에 실패했습니다: {ex.Message}");
+                Console.ResetColor();
+                return 1;
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"❌ 알 수 없는 오류로 인해 프로젝트 생성에 실패했습니다: {ex.Message}");
+                Console.ResetColor();
+                return 1;
+            }
+        }
+
+        private static bool IsValidProjectName(string name)
+        {
+            // 경로 조작 방지: 알파벳, 숫자, 하이픈, 언더스코어만 허용
+            return !string.IsNullOrWhiteSpace(name) &&
+                   Regex.IsMatch(name, @"^[a-zA-Z0-9_-]+$") &&
+                   !name.Contains("..") &&
+                   !name.Contains("/") &&
+                   !name.Contains("\\");
         }
     }
 
     private static void CreateConfigFile(string projectPath, string projectName)
     {
-        var config = new StringBuilder();
-        config.AppendLine("{");
-        config.AppendLine($"  \"title\": \"{projectName}\",");
-        config.AppendLine($"  \"description\": \"{projectName}에 오신 것을 환영합니다\",");
-        config.AppendLine("  \"url\": \"https://example.com\",");
-        config.AppendLine("  \"author\": \"Your Name\",");
-        config.AppendLine("  \"language\": \"ko\",");
-        config.AppendLine("  \"postsPerPage\": 10");
-        config.AppendLine("}");
+        // JSON 직렬화를 사용하여 안전하게 생성
+        var configObject = new
+        {
+            title = projectName,
+            description = $"{projectName}에 오신 것을 환영합니다",
+            url = "https://example.com",
+            author = "Your Name",
+            language = "ko",
+            postsPerPage = 10
+        };
 
-        File.WriteAllText(Path.Combine(projectPath, "config.json"), config.ToString());
+        var jsonOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        };
+
+        var json = JsonSerializer.Serialize(configObject, jsonOptions);
+        File.WriteAllText(Path.Combine(projectPath, "config.json"), json);
         Console.WriteLine("  ✓ config.json");
     }
 

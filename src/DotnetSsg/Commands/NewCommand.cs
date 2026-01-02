@@ -1,5 +1,7 @@
 using System.CommandLine;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Globalization;
 
 namespace DotnetSsg.Commands;
 
@@ -68,24 +70,56 @@ public static class NewCommand
             var workingDirectory = Directory.GetCurrentDirectory();
             var contentDir = Path.Combine(workingDirectory, "content");
 
-            if (type.ToLower() == "post")
+            // content 디렉토리 존재 확인
+            if (!Directory.Exists(contentDir))
             {
-                CreatePost(contentDir, title, draft, date);
-            }
-            else if (type.ToLower() == "page")
-            {
-                CreatePage(contentDir, title);
-            }
-            else
-            {
-                Console.WriteLine($"❌ 알 수 없는 타입: {type}. 'post' 또는 'page'를 사용하세요.");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("❌ 콘텐츠 디렉터리를 찾을 수 없습니다.");
+                Console.WriteLine("   이 디렉터리에서 처음 실행하는 경우 'dotnet-ssg init' 명령을 먼저 실행해 초기화해 주세요.");
+                Console.ResetColor();
                 return 1;
             }
 
-            return 0;
+            try
+            {
+                if (type.Equals("post", StringComparison.OrdinalIgnoreCase))
+                {
+                    return CreatePost(contentDir, title, draft, date);
+                }
+                else if (type.Equals("page", StringComparison.OrdinalIgnoreCase))
+                {
+                    return CreatePage(contentDir, title);
+                }
+                else
+                {
+                    Console.WriteLine($"❌ 알 수 없는 타입: {type}. 'post' 또는 'page'를 사용하세요.");
+                    return 1;
+                }
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"❌ 파일 생성 권한이 없습니다: {ex.Message}");
+                Console.ResetColor();
+                return 1;
+            }
+            catch (IOException ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"❌ 파일 생성 중 오류가 발생했습니다: {ex.Message}");
+                Console.ResetColor();
+                return 1;
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"❌ 알 수 없는 오류가 발생했습니다: {ex.Message}");
+                Console.ResetColor();
+                return 1;
+            }
         }
 
-        private static void CreatePost(string contentDir, string title, bool draft, string? dateStr)
+        private static int CreatePost(string contentDir, string title, bool draft, string? dateStr)
         {
             var postsDir = Path.Combine(contentDir, "posts");
             if (!Directory.Exists(postsDir))
@@ -93,13 +127,49 @@ public static class NewCommand
                 Directory.CreateDirectory(postsDir);
             }
 
+            // 날짜 검증
+            DateTime postDateTime;
+            if (!string.IsNullOrEmpty(dateStr))
+            {
+                if (!DateTime.TryParseExact(dateStr, "yyyy-MM-dd", CultureInfo.InvariantCulture,
+                        DateTimeStyles.None, out postDateTime))
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"❌ 잘못된 날짜 형식입니다: {dateStr}");
+                    Console.WriteLine("   올바른 형식: YYYY-MM-DD (예: 2026-01-02)");
+                    Console.ResetColor();
+                    return 1;
+                }
+            }
+            else
+            {
+                postDateTime = DateTime.Now;
+            }
+
+            var postDate = postDateTime.ToString("yyyy-MM-dd");
+
             var slug = ToKebabCase(title);
             var filePath = Path.Combine(postsDir, $"{slug}.md");
-            var postDate = string.IsNullOrEmpty(dateStr) ? DateTime.Now.ToString("yyyy-MM-dd") : dateStr;
 
+            // 파일 존재 확인
+            if (File.Exists(filePath))
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"⚠️ 파일이 이미 존재합니다: {filePath}");
+                Console.WriteLine("   덮어쓰시겠습니까? (y/N): ");
+                Console.ResetColor();
+                var response = Console.ReadLine()?.Trim().ToLower();
+                if (response != "y" && response != "yes")
+                {
+                    Console.WriteLine("취소되었습니다.");
+                    return 0;
+                }
+            }
+
+            var escapedTitle = EscapeYamlString(title);
             var frontMatter = new StringBuilder();
             frontMatter.AppendLine("---");
-            frontMatter.AppendLine($"title: \"{title}\"");
+            frontMatter.AppendLine($"title: \"{escapedTitle}\"");
             frontMatter.AppendLine($"date: {postDate}");
             frontMatter.AppendLine($"draft: {draft.ToString().ToLower()}");
             frontMatter.AppendLine("tags:");
@@ -117,16 +187,34 @@ public static class NewCommand
             {
                 Console.WriteLine("📝 Draft 모드로 생성되었습니다.");
             }
+
+            return 0;
         }
 
-        private static void CreatePage(string contentDir, string title)
+        private static int CreatePage(string contentDir, string title)
         {
             var slug = ToKebabCase(title);
             var filePath = Path.Combine(contentDir, $"{slug}.md");
 
+            // 파일 존재 확인
+            if (File.Exists(filePath))
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"⚠️ 파일이 이미 존재합니다: {filePath}");
+                Console.WriteLine("   덮어쓰시겠습니까? (y/N): ");
+                Console.ResetColor();
+                var response = Console.ReadLine()?.Trim().ToLower();
+                if (response != "y" && response != "yes")
+                {
+                    Console.WriteLine("취소되었습니다.");
+                    return 0;
+                }
+            }
+
+            var escapedTitle = EscapeYamlString(title);
             var frontMatter = new StringBuilder();
             frontMatter.AppendLine("---");
-            frontMatter.AppendLine($"title: \"{title}\"");
+            frontMatter.AppendLine($"title: \"{escapedTitle}\"");
             frontMatter.AppendLine("description: \"페이지 설명을 입력하세요\"");
             frontMatter.AppendLine("---");
             frontMatter.AppendLine();
@@ -136,20 +224,56 @@ public static class NewCommand
 
             File.WriteAllText(filePath, frontMatter.ToString());
             Console.WriteLine($"✅ 새 페이지가 생성되었습니다: {filePath}");
+            return 0;
         }
 
         private static string ToKebabCase(string text)
         {
-            return text
-                .ToLower()
-                .Replace(" ", "-")
-                .Replace("_", "-")
-                .Replace(".", "-")
-                .Replace(",", "")
-                .Replace("!", "")
-                .Replace("?", "")
-                .Replace("'", "")
-                .Replace("\"", "");
+            // 1. 먼저 유니코드 문자를 정규화하고 악센트 제거
+            var normalizedString = text.Normalize(NormalizationForm.FormD);
+            var stringBuilder = new StringBuilder();
+
+            foreach (var c in normalizedString)
+            {
+                var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+                {
+                    stringBuilder.Append(c);
+                }
+            }
+
+            var result = stringBuilder.ToString().Normalize(NormalizationForm.FormC);
+
+            // 2. 소문자 변환
+            result = result.ToLower();
+
+            // 3. 안전하지 않은 문자들을 하이픈으로 변환하거나 제거
+            result = Regex.Replace(result, @"[^a-z0-9\u4e00-\u9fff\uac00-\ud7af\u3040-\u309f\u30a0-\u30ff-]+", "-");
+
+            // 4. 연속된 하이픈을 하나로
+            result = Regex.Replace(result, @"-+", "-");
+
+            // 5. 앞뒤 하이픈 제거
+            result = result.Trim('-');
+
+            // 6. 빈 문자열이면 기본값 반환
+            if (string.IsNullOrEmpty(result))
+            {
+                result = "untitled";
+            }
+
+            return result;
+        }
+
+        private static string EscapeYamlString(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
+            // YAML 문자열 이스케이프: 백슬래시와 따옴표
+            return input
+                .Replace("\\", "\\\\")
+                .Replace("\"", "\\\"");
         }
     }
 }

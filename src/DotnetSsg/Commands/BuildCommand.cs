@@ -69,6 +69,9 @@ public static class BuildCommand
 
                 var isWindows = Environment.OSVersion.Platform == PlatformID.Win32NT;
 
+                // Windows에서는 PowerShell을 통해 npm 실행
+                // macOS/Linux에서는 직접 npm 실행
+                // 참고: npm은 Node.js와 함께 설치되며 모든 플랫폼에서 동일하게 동작
                 var processInfo = new System.Diagnostics.ProcessStartInfo
                 {
                     FileName = isWindows ? "powershell.exe" : "npm",
@@ -84,6 +87,7 @@ public static class BuildCommand
                 if (process == null)
                 {
                     Console.WriteLine("⚠️ npm을 실행할 수 없습니다. Tailwind CSS 빌드를 건너뜁니다.");
+                    Console.WriteLine("   npm이 설치되어 있고 PATH에 등록되어 있는지 확인하세요.");
                     return;
                 }
 

@@ -59,11 +59,17 @@ dotnet run --project src/DotnetSsg -- build
 npm run serve
 ```
 
-### 옵션 2: dotnet tool로 설치 (권장)
+### 옵션 2: dotnet tool로 설치 (개발 중)
+
+> ⚠️ **주의**: 전역 도구 설치 기능은 NuGet에 패키지가 게시된 후 사용할 수 있습니다.  
+> 현재는 저장소를 클론하여 사용하거나, 로컬에서 패키지를 빌드하여 설치할 수 있습니다.
 
 ```bash
-# 전역 도구로 설치
-dotnet tool install --global dotnet-ssg
+# 로컬에서 패키지 빌드 및 설치
+git clone https://github.com/muho2019/dotnet-ssg.git
+cd dotnet-ssg/src/DotnetSsg
+dotnet pack -c Release
+dotnet tool install --global --add-source ./bin/Release dotnet-ssg
 
 # 새 프로젝트 생성
 dotnet-ssg init my-blog
