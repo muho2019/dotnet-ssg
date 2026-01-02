@@ -13,6 +13,9 @@ public class Post : ContentItem
     [YamlMember(Alias = "author")]
     public string? Author { get; set; }
 
+    [YamlMember(Alias = "draft")]
+    public bool Draft { get; set; } = false;
+
     [YamlMember(Alias = "cover_image")]
     public new string? CoverImage
     {
