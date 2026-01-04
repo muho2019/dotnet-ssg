@@ -117,7 +117,7 @@ public class HtmlGenerator
             Directory.CreateDirectory(outputDir);
         }
 
-        await File.WriteAllTextAsync(outputPath, fullHtml);
+        await WriteFileWithRetryAsync(outputPath, fullHtml);
         Console.WriteLine($"Generated: {outputPath}");
     }
 
@@ -156,7 +156,7 @@ public class HtmlGenerator
         var fullHtml = await _blazorRenderer.RenderComponentAsync<MainLayout>(layoutParams);
 
         var outputPath = Path.Combine(outputDirectory, "index.html");
-        await File.WriteAllTextAsync(outputPath, fullHtml);
+        await WriteFileWithRetryAsync(outputPath, fullHtml);
         Console.WriteLine($"Generated: {outputPath}");
     }
 
@@ -201,7 +201,7 @@ public class HtmlGenerator
         Directory.CreateDirectory(tagDir);
 
         var outputPath = Path.Combine(tagDir, "index.html");
-        await File.WriteAllTextAsync(outputPath, fullHtml);
+        await WriteFileWithRetryAsync(outputPath, fullHtml);
         Console.WriteLine($"Generated: {outputPath}");
     }
 
@@ -321,5 +321,22 @@ public class HtmlGenerator
         }
 
         return formattedTitle;
+    }
+
+    private static async Task WriteFileWithRetryAsync(string path, string content, int maxRetries = 3)
+    {
+        for (int i = 0; i < maxRetries; i++)
+        {
+            try
+            {
+                await File.WriteAllTextAsync(path, content);
+                return; // 성공
+            }
+            catch (IOException) when (i < maxRetries - 1)
+            {
+                // 파일이 사용 중이면 잠시 대기 후 재시도
+                await Task.Delay(50 * (i + 1)); // 50ms, 100ms, 150ms
+            }
+        }
     }
 }

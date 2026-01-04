@@ -45,7 +45,8 @@ public class BuildService
             // 출력 디렉토리 준비
             if (Directory.Exists(outputDir))
             {
-                Directory.Delete(outputDir, true);
+                // 서버가 파일을 사용 중일 수 있으므로 안전하게 삭제
+                DeleteDirectorySafe(outputDir);
             }
 
             Directory.CreateDirectory(outputDir);
@@ -173,6 +174,61 @@ public class BuildService
                         $"⚠️ BlazorRenderer Dispose 중 예외 발생: {disposeEx.GetType().Name}: {disposeEx.Message}");
                     Console.Error.WriteLine(disposeEx.StackTrace);
                 }
+            }
+        }
+    }
+
+    private static void DeleteDirectorySafe(string path)
+    {
+        const int maxRetries = 3;
+        const int delayMs = 100;
+
+        for (int i = 0; i < maxRetries; i++)
+        {
+            try
+            {
+                // 먼저 모든 파일을 삭제
+                foreach (var file in Directory.GetFiles(path, "*", SearchOption.AllDirectories))
+                {
+                    try
+                    {
+                        File.SetAttributes(file, FileAttributes.Normal);
+                        File.Delete(file);
+                    }
+                    catch
+                    {
+                        // 개별 파일 삭제 실패는 무시 (서버가 사용 중일 수 있음)
+                    }
+                }
+
+                // 빈 디렉토리 삭제 시도
+                foreach (var dir in Directory.GetDirectories(path, "*", SearchOption.AllDirectories).Reverse())
+                {
+                    try
+                    {
+                        if (!Directory.EnumerateFileSystemEntries(dir).Any())
+                        {
+                            Directory.Delete(dir, false);
+                        }
+                    }
+                    catch
+                    {
+                        // 디렉토리 삭제 실패 무시
+                    }
+                }
+
+                return; // 성공
+            }
+            catch (Exception ex)
+            {
+                if (i == maxRetries - 1)
+                {
+                    // 마지막 시도에서도 실패하면 경고만 출력하고 계속 진행
+                    Console.WriteLine($"⚠️ 일부 파일 삭제 실패 (진행 중): {ex.Message}");
+                    return;
+                }
+
+                Thread.Sleep(delayMs);
             }
         }
     }

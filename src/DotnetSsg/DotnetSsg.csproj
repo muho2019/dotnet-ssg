@@ -30,4 +30,9 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- ASP.NET Core 프레임워크 참조 (개발 서버용) -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
 </Project>
