@@ -9,6 +9,7 @@ var rootCommand = new RootCommand("dotnet-ssg - .NET 기반 정적 사이트 생
 
 // 명령어 추가
 rootCommand.Add(BuildCommand.Create());
+rootCommand.Add(ServeCommand.Create());
 rootCommand.Add(CleanCommand.Create());
 rootCommand.Add(NewCommand.Create());
 rootCommand.Add(InitCommand.Create());

@@ -1,0 +1,36 @@
+{
+  "profiles": {
+    "dotnet-ssg serve": {
+      "commandName": "Project",
+      "commandLineArgs": "serve --port 5000",
+      "workingDirectory": "$(ProjectDir)..\\..\\",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    },
+    "dotnet-ssg serve (no watch)": {
+      "commandName": "Project",
+      "commandLineArgs": "serve --port 5000 --no-watch",
+      "workingDirectory": "$(ProjectDir)..\\..\\",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    },
+    "dotnet-ssg build": {
+      "commandName": "Project",
+      "commandLineArgs": "build",
+      "workingDirectory": "$(ProjectDir)..\\..\\",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    },
+    "dotnet-ssg build (drafts)": {
+      "commandName": "Project",
+      "commandLineArgs": "build --drafts",
+      "workingDirectory": "$(ProjectDir)..\\..\\",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

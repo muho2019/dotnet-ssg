@@ -1,5 +1,5 @@
 ---
-title: 'My First Blog Post'
+title: 'My First Blog Post - Hot Reload Test!'
 date: '2023-10-27 12:10:01'
 tags:
   - introduction
@@ -8,6 +8,12 @@ tags:
 ---
 
 Welcome to my new blog! This is my very first post, generated using my custom .NET Static Site Generator.
+
+**🔥 Hot Reload is working!** This line was just added to test the live reload feature.
+
+**✨ Testing again!** Let's see if the browser auto-refreshes now!
+
+**🚀 New change at 23:20!** Testing the file watcher and live reload functionality.
 
 I've been working on this project to learn more about:
 
