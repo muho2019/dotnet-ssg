@@ -131,7 +131,7 @@ public static class ServeCommand
             {
                 // FileWatcher 시작
                 fileWatcher = new FileWatcher(workingDirectory, output);
-                fileWatcher.OnChange += async (sender, changedFile) =>
+                fileWatcher.OnChange += async (_, changedFile) =>
                 {
                     // 이미 빌드 중이면 무시
                     lock (buildLock)
@@ -153,7 +153,7 @@ public static class ServeCommand
 
                         var rebuildService = new BuildService();
                         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-                        var success = await rebuildService.BuildAsync(workingDirectory, output, true); // draft 포함
+                        var success = await rebuildService.BuildAsync(workingDirectory, output, drafts);
 
                         if (success)
                         {
@@ -221,6 +221,17 @@ public static class ServeCommand
                     return;
                 }
 
+                // stderr를 비동기로 읽기 시작 (블로킹 방지)
+                var errorBuilder = new System.Text.StringBuilder();
+                process.ErrorDataReceived += (_, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                    {
+                        errorBuilder.AppendLine(e.Data);
+                    }
+                };
+                process.BeginErrorReadLine();
+
                 await process.WaitForExitAsync();
 
                 if (process.ExitCode == 0)
@@ -229,7 +240,7 @@ public static class ServeCommand
                 }
                 else
                 {
-                    var error = await process.StandardError.ReadToEndAsync();
+                    var error = errorBuilder.ToString();
                     Console.WriteLine($"⚠️ Tailwind CSS 빌드 실패: {error}");
                 }
             }

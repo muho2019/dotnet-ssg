@@ -43,7 +43,7 @@ public class DevServer
         app.UseWebSockets();
 
         // LiveReload WebSocket 엔드포인트 미들웨어
-        app.Use(async (HttpContext context, RequestDelegate next) =>
+        app.Use(async (context, next) =>
         {
             if (context.Request.Path == "/livereload")
             {
@@ -102,7 +102,7 @@ public class DevServer
         });
 
         // HTML 파일에 LiveReload 스크립트 주입하는 미들웨어 (정적 파일보다 먼저 실행)
-        app.Use(async (HttpContext context, RequestDelegate next) =>
+        app.Use(async (context, next) =>
         {
             var path = context.Request.Path.Value ?? "/";
 
@@ -118,21 +118,41 @@ public class DevServer
 
             var filePath = Path.Combine(_contentRoot, path.TrimStart('/'));
 
-            // HTML 파일인 경우 스크립트 주입
-            if (File.Exists(filePath) && filePath.EndsWith(".html", StringComparison.OrdinalIgnoreCase))
+            // HTML 파일인 경우 스크립트 주입 (단, 너무 큰 파일은 제외)
+            const long maxHtmlInjectionSizeBytes = 5L * 1024 * 1024; // 5 MB
+            var fileInfo = new FileInfo(filePath);
+            if (fileInfo.Exists && fileInfo.Extension.Equals(".html", StringComparison.OrdinalIgnoreCase))
             {
-                var html = await File.ReadAllTextAsync(filePath, cancellationToken);
+                if (fileInfo.Length <= maxHtmlInjectionSizeBytes)
+                {
+                    var html = await File.ReadAllTextAsync(filePath, cancellationToken);
 
-                // LiveReload 스크립트 주입
-                html = InjectLiveReloadScript(html);
+                    // LiveReload 스크립트 주입
+                    html = InjectLiveReloadScript(html);
 
-                context.Response.ContentType = "text/html; charset=utf-8";
-                await context.Response.WriteAsync(html, cancellationToken);
-                return; // 처리 완료, 다음 미들웨어로 가지 않음
+                    context.Response.ContentType = "text/html; charset=utf-8";
+                    await context.Response.WriteAsync(html, cancellationToken);
+                    return; // 처리 완료, 다음 미들웨어로 가지 않음
+                }
+                // 파일이 너무 큰 경우에는 LiveReload 스크립트를 주입하지 않고
+                // 다음 미들웨어(예: 정적 파일 미들웨어)에 처리를 위임함
             }
 
-            // HTML이 아닌 경우 다음 미들웨어로 전달
+            // HTML이 아닌 경우 또는 너무 큰 HTML 파일인 경우 다음 미들웨어로 전달
             await next(context);
+        });
+
+        // HTML 파일은 정적 파일 미들웨어로 서빙하지 않음
+        app.Use(async (HttpContext context, Func<Task> next) =>
+        {
+            var path = context.Request.Path;
+            if (path.HasValue && path.Value.EndsWith(".html", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                return;
+            }
+
+            await next();
         });
 
         // 정적 파일 제공 (HTML 제외)
@@ -142,19 +162,11 @@ public class DevServer
         {
             FileProvider = fileProvider,
             RequestPath = "",
-            ServeUnknownFileTypes = false,
-            OnPrepareResponse = ctx =>
-            {
-                // HTML 파일은 정적 파일로 서빙하지 않음 (위에서 이미 처리됨)
-                if (ctx.File.Name.EndsWith(".html", StringComparison.OrdinalIgnoreCase))
-                {
-                    ctx.Context.Response.StatusCode = 404;
-                }
-            }
+            ServeUnknownFileTypes = false
         });
 
         // 404 처리
-        app.Use(async (HttpContext context, RequestDelegate next) =>
+        app.Use(async (HttpContext context, Func<Task> _) =>
         {
             if (context.Response.StatusCode == 404 || !context.Response.HasStarted)
             {
@@ -185,24 +197,23 @@ public class DevServer
         {
             Console.WriteLine($"[DevServer] TriggerReload 호출됨. WebSocket 연결 수: {_websockets.Count}");
 
-            foreach (var ws in _websockets.ToList())
+            foreach (var ws in _websockets.ToList().Where(ws => ws.State == WebSocketState.Open))
             {
-                if (ws.State == WebSocketState.Open)
+                try
                 {
-                    try
-                    {
-                        var message = Encoding.UTF8.GetBytes("reload");
-                        ws.SendAsync(
-                            new ArraySegment<byte>(message),
-                            WebSocketMessageType.Text,
-                            true,
-                            CancellationToken.None).Wait();
-                        Console.WriteLine("[DevServer] Reload 메시지 전송 성공");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"[DevServer] WebSocket 전송 실패: {ex.Message}");
-                    }
+                    var message = Encoding.UTF8.GetBytes("reload");
+                    ws.SendAsync(
+                        new ArraySegment<byte>(message),
+                        WebSocketMessageType.Text,
+                        true,
+                        CancellationToken.None).GetAwaiter().GetResult();
+                    Console.WriteLine("[DevServer] Reload 메시지 전송 성공");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[DevServer] WebSocket 전송 실패: {ex.Message}");
+                    _websockets.Remove(ws);
+                    Console.WriteLine("[DevServer] 전송 실패로 WebSocket 연결을 목록에서 제거했습니다.");
                 }
             }
         }

@@ -195,9 +195,10 @@ public class BuildService
                         File.SetAttributes(file, FileAttributes.Normal);
                         File.Delete(file);
                     }
-                    catch
+                    catch (Exception ex)
                     {
                         // 개별 파일 삭제 실패는 무시 (서버가 사용 중일 수 있음)
+                        Console.WriteLine($"⚠️ 파일 삭제 실패: {file} - {ex.Message}");
                     }
                 }
 
@@ -211,9 +212,10 @@ public class BuildService
                             Directory.Delete(dir, false);
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
                         // 디렉토리 삭제 실패 무시
+                        Console.WriteLine($"⚠️ 디렉토리 삭제 실패: {dir} - {ex.Message}");
                     }
                 }
 

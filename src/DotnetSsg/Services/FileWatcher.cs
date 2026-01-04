@@ -89,7 +89,9 @@ public class FileWatcher : IDisposable
     private void OnFileChanged(object sender, FileSystemEventArgs e)
     {
         // 출력 디렉토리 변경은 무시
-        if (e.FullPath.StartsWith(Path.Combine(_workingDirectory, _outputDirectory)))
+        var outputFullPath = Path.GetFullPath(Path.Combine(_workingDirectory, _outputDirectory));
+        var changedFullPath = Path.GetFullPath(e.FullPath);
+        if (changedFullPath.StartsWith(outputFullPath, StringComparison.OrdinalIgnoreCase))
         {
             return;
         }
@@ -99,7 +101,6 @@ public class FileWatcher : IDisposable
         if (fileName.StartsWith("~") ||
             fileName.StartsWith(".") ||
             e.FullPath.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase) ||
-            e.FullPath.EndsWith(".TMP", StringComparison.OrdinalIgnoreCase) ||
             fileName.Contains("~RF") || // Visual Studio 임시 파일
             fileName.EndsWith(".swp") || // Vim 임시 파일
             fileName.EndsWith(".swo")) // Vim 임시 파일
@@ -113,7 +114,9 @@ public class FileWatcher : IDisposable
     private void OnFileRenamed(object sender, RenamedEventArgs e)
     {
         // 출력 디렉토리 변경은 무시
-        if (e.FullPath.StartsWith(Path.Combine(_workingDirectory, _outputDirectory)))
+        var outputFullPath = Path.GetFullPath(Path.Combine(_workingDirectory, _outputDirectory));
+        var changedFullPath = Path.GetFullPath(e.FullPath);
+        if (changedFullPath.StartsWith(outputFullPath, StringComparison.OrdinalIgnoreCase))
         {
             return;
         }
@@ -128,12 +131,10 @@ public class FileWatcher : IDisposable
             var now = DateTime.Now;
 
             // Debouncing: 같은 파일이 짧은 시간에 여러 번 변경되는 것 방지
-            if (_lastChangeTime.TryGetValue(fullPath, out var lastTime))
+            if (_lastChangeTime.TryGetValue(fullPath, out var lastTime) &&
+                (now - lastTime).TotalMilliseconds < DebounceMilliseconds)
             {
-                if ((now - lastTime).TotalMilliseconds < DebounceMilliseconds)
-                {
-                    return;
-                }
+                return;
             }
 
             _lastChangeTime[fullPath] = now;
@@ -143,7 +144,17 @@ public class FileWatcher : IDisposable
         var relativePath = Path.GetRelativePath(_workingDirectory, fullPath);
 
         // 이벤트 발생 (비동기로 처리하기 위해 Task.Run 사용)
-        Task.Run(() => OnChange?.Invoke(this, relativePath));
+        Task.Run(() =>
+        {
+            try
+            {
+                OnChange?.Invoke(this, relativePath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error in FileWatcher OnChange handler for '{relativePath}': {ex}");
+            }
+        });
     }
 
     public void Dispose()
