@@ -13,12 +13,14 @@ public class HtmlGenerator : IHtmlGenerator
     private readonly IBlazorRenderer _blazorRenderer;
     private readonly ILogger<HtmlGenerator> _logger;
     private readonly IEnumerable<IRenderStrategy> _renderStrategies;
+    private readonly IPathResolver _pathResolver;
 
-    public HtmlGenerator(IBlazorRenderer blazorRenderer, ILogger<HtmlGenerator> logger, IEnumerable<IRenderStrategy> renderStrategies)
+    public HtmlGenerator(IBlazorRenderer blazorRenderer, ILogger<HtmlGenerator> logger, IEnumerable<IRenderStrategy> renderStrategies, IPathResolver pathResolver)
     {
         _blazorRenderer = blazorRenderer;
         _logger = logger;
         _renderStrategies = renderStrategies;
+        _pathResolver = pathResolver;
     }
 
 
@@ -33,22 +35,8 @@ public class HtmlGenerator : IHtmlGenerator
 
         var fullHtml = await strategy.RenderAsync(item, siteConfig);
 
-
-        // 출력 경로 결정
-        var relativePath = Path.GetRelativePath("content", item.SourcePath);
-        var pathWithoutExtension = Path.ChangeExtension(relativePath, null);
-
-        string outputPath;
-        var fileName = Path.GetFileNameWithoutExtension(item.SourcePath);
-        if (fileName.Equals("index", StringComparison.OrdinalIgnoreCase))
-        {
-            var parentDir = Path.GetDirectoryName(pathWithoutExtension);
-            outputPath = Path.Combine("output", parentDir ?? string.Empty, "index.html");
-        }
-        else
-        {
-            outputPath = Path.Combine("output", pathWithoutExtension, "index.html");
-        }
+        // PathResolver를 사용하여 출력 경로 결정 (HtmlGenerator의 로직 단순화)
+        string outputPath = _pathResolver.GetOutputPath(item);
 
         // 디렉토리 생성 및 파일 저장
         var outputDir = Path.GetDirectoryName(outputPath);
@@ -60,6 +48,7 @@ public class HtmlGenerator : IHtmlGenerator
         await WriteFileWithRetryAsync(outputPath, fullHtml);
         _logger.LogInformation("Generated: {OutputPath}", outputPath);
     }
+
 
     public async Task GenerateIndexAsync(SiteConfig siteConfig, List<Post> posts, string outputDirectory)
     {

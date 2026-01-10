@@ -10,10 +10,12 @@ public class MarkdownParser : IMarkdownParser
 {
     private readonly IDeserializer _yamlDeserializer;
     private readonly ILogger<MarkdownParser> _logger;
+    private readonly IPathResolver _pathResolver;
 
-    public MarkdownParser(ILogger<MarkdownParser> logger)
+    public MarkdownParser(ILogger<MarkdownParser> logger, IPathResolver pathResolver)
     {
         _logger = logger;
+        _pathResolver = pathResolver;
         // No need for a custom deserializer setup if we use YamlMember attributes
         _yamlDeserializer = new DeserializerBuilder().Build();
     }
@@ -94,8 +96,9 @@ public class MarkdownParser : IMarkdownParser
 
         item.SourcePath = filePath;
         item.HtmlContent = htmlContent;
-        item.Url = GenerateUrl(filePath, contentRoot);
-        item.OutputPath = GenerateOutputPath(filePath, contentRoot);
+        // 경로 및 URL 계산을 PathResolver에 위임
+        item.Url = _pathResolver.GetUrl(item);
+        item.OutputPath = _pathResolver.GetOutputPath(item);
 
         return item;
     }
@@ -115,55 +118,5 @@ public class MarkdownParser : IMarkdownParser
     {
         var fileName = Path.GetFileNameWithoutExtension(filePath);
         return System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(fileName.Replace('-', ' '));
-    }
-
-    private string GenerateUrl(string filePath, string contentRoot)
-    {
-        var relativePath = Path.GetRelativePath(contentRoot, filePath);
-        var directory = Path.GetDirectoryName(relativePath) ?? string.Empty;
-        var normalizedDirectory = directory.Replace(Path.DirectorySeparatorChar, '/');
-        var fileName = Path.GetFileNameWithoutExtension(relativePath);
-
-        if (fileName.Equals("index", StringComparison.OrdinalIgnoreCase))
-        {
-            if (string.IsNullOrEmpty(normalizedDirectory))
-            {
-                return string.Empty;
-            }
-
-            return normalizedDirectory.EndsWith("/")
-                ? normalizedDirectory
-                : normalizedDirectory + "/";
-        }
-
-        var prefix = string.IsNullOrEmpty(normalizedDirectory)
-            ? string.Empty
-            : (normalizedDirectory.EndsWith("/") ? normalizedDirectory : normalizedDirectory + "/");
-
-        return prefix + fileName + "/";
-    }
-
-    private string GenerateOutputPath(string filePath, string contentRoot)
-    {
-        var relativePath = Path.GetRelativePath(contentRoot, filePath);
-        var fileName = Path.GetFileNameWithoutExtension(relativePath);
-        var directory = Path.GetDirectoryName(relativePath) ?? string.Empty;
-
-        // "content/about.md" -> "about/index.html"
-        // "content/posts/my-first-post.md" -> "posts/my-first-post/index.html"
-        if (fileName.Equals("index", StringComparison.OrdinalIgnoreCase))
-        {
-            // "content/index.md" -> "index.html"
-            // "content/posts/index.md" -> "posts/index.html"
-            return string.IsNullOrEmpty(directory)
-                ? "index.html"
-                : Path.Combine(directory, "index.html").Replace(Path.DirectorySeparatorChar, '/');
-        }
-
-        var outputDir = string.IsNullOrEmpty(directory)
-            ? fileName
-            : Path.Combine(directory, fileName);
-
-        return Path.Combine(outputDir, "index.html").Replace(Path.DirectorySeparatorChar, '/');
     }
 }

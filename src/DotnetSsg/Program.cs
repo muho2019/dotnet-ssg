@@ -31,6 +31,7 @@ serviceCollection.AddSingleton<ISitemapGenerator, SitemapGenerator>();
 serviceCollection.AddSingleton<IRobotsTxtGenerator, RobotsTxtGenerator>();
 serviceCollection.AddSingleton<IRssFeedGenerator, RssFeedGenerator>();
 serviceCollection.AddSingleton<IFileSystemUtils, FileSystemUtils>();
+serviceCollection.AddSingleton<IPathResolver, PathResolver>();
 
 // Scoped: 빌드/요청 단위로 상태가 관리되어야 하는 서비스
 // (BlazorRenderer, HtmlGenerator 등은 내부적으로 상태를 가질 수 있음)

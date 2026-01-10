@@ -10,11 +10,13 @@ public class MarkdownParserTests
     private readonly Mock<ILogger<MarkdownParser>> _loggerMock;
     private readonly IMarkdownParser _parser;
     private readonly string _testContentPath;
+    private readonly IPathResolver _pathResolver;
 
     public MarkdownParserTests()
     {
         _loggerMock = new Mock<ILogger<MarkdownParser>>();
-        _parser = new MarkdownParser(_loggerMock.Object);
+        _pathResolver = new PathResolver();
+        _parser = new MarkdownParser(_loggerMock.Object, _pathResolver);
         // Create a temporary test content directory
         _testContentPath = Path.Combine(Path.GetTempPath(), "dotnet-ssg-tests-" + Guid.NewGuid());
         Directory.CreateDirectory(_testContentPath);
