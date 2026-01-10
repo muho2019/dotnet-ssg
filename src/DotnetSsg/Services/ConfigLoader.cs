@@ -20,7 +20,7 @@ public class ConfigLoader : IConfigLoader
 
         if (!File.Exists(configPath))
         {
-            _logger.LogWarning("Warning: Config file '{ConfigPath}' not found. Using default configuration.", configPath);
+            _logger.LogWarning("경고: 설정 파일 '{ConfigPath}'을(를) 찾을 수 없습니다. 기본 설정을 사용합니다.", configPath);
             return new SiteConfig();
         }
 
@@ -40,13 +40,13 @@ public class ConfigLoader : IConfigLoader
         }
         catch (JsonException ex)
         {
-            _logger.LogError(ex, "Error: Invalid JSON format in '{ConfigPath}'.", configPath);
-            throw; // Rethrow to stop the build process
+            _logger.LogError(ex, "오류: '{ConfigPath}'의 JSON 형식이 잘못되었습니다.", configPath);
+            throw; // 빌드 프로세스를 중단하기 위해 다시 던짐
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error: Failed to read config file '{ConfigPath}'.", configPath);
-            throw; // Rethrow to stop the build process
+            _logger.LogError(ex, "오류: 설정 파일 '{ConfigPath}'을(를) 읽는데 실패했습니다.", configPath);
+            throw; // 빌드 프로세스를 중단하기 위해 다시 던짐
         }
     }
 }

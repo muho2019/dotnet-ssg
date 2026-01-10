@@ -6,7 +6,7 @@ public class FileScanner : IFileScanner
     {
         if (!Directory.Exists(directory))
         {
-            Console.WriteLine($"Warning: Directory '{directory}' not found.");
+            Console.WriteLine($"경고: 디렉토리 '{directory}'을(를) 찾을 수 없습니다.");
             return Enumerable.Empty<string>();
         }
 

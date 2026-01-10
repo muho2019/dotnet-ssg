@@ -152,7 +152,7 @@ public class FileWatcher : IDisposable
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error in FileWatcher OnChange handler for '{relativePath}': {ex}");
+                Console.Error.WriteLine($"FileWatcher OnChange 핸들러에서 오류 발생 ('{relativePath}'): {ex}");
             }
         });
     }

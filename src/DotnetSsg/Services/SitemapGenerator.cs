@@ -5,13 +5,13 @@ namespace DotnetSsg.Services;
 
 public class SitemapGenerator : ISitemapGenerator
 {
-public void Generate(SiteConfig config, List<ContentItem> contentItems, string outputDirectory, List<Post> posts,
+    public void Generate(SiteConfig config, List<ContentItem> contentItems, string outputDirectory, List<Post> posts,
         List<string> tags)
     {
-        // Build sitemap items including home page and tag archives
+        // 홈 페이지 및 태그 아카이브를 포함한 사이트맵 아이템 생성
         var sitemapItems = new List<ContentItem>(contentItems);
 
-        // Add home page
+        // 홈 페이지 추가
         var homePage = new Page
         {
             Title = "Home",
@@ -24,7 +24,7 @@ public void Generate(SiteConfig config, List<ContentItem> contentItems, string o
         };
         sitemapItems.Add(homePage);
 
-        // Add tag archive pages
+        // 태그 아카이브 페이지 추가
         foreach (var tag in tags)
         {
             var tagPage = new Page
@@ -42,7 +42,7 @@ public void Generate(SiteConfig config, List<ContentItem> contentItems, string o
             sitemapItems.Add(tagPage);
         }
 
-        // Generate sitemap XML
+        // 사이트맵 XML 생성
         var sitemapContent = new StringBuilder();
         sitemapContent.AppendLine(@"<?xml version=""1.0"" encoding=""UTF-8""?>");
         sitemapContent.AppendLine(@"<urlset xmlns=""http://www.sitemaps.org/schemas/sitemap/0.9"">");
@@ -56,20 +56,20 @@ public void Generate(SiteConfig config, List<ContentItem> contentItems, string o
             sitemapContent.AppendLine("  <url>");
             sitemapContent.AppendLine($"    <loc>{XmlEscape(location)}</loc>");
 
-            // Add lastmod if available
+            // lastmod가 있으면 추가
             var lastMod = GetLastModifiedDate(item);
             if (lastMod != null)
             {
                 sitemapContent.AppendLine($"    <lastmod>{lastMod:yyyy-MM-ddTHH:mm:sszzz}</lastmod>");
             }
 
-            // Add changefreq
+            // changefreq 추가
             if (!string.IsNullOrEmpty(item.ChangeFrequency))
             {
                 sitemapContent.AppendLine($"    <changefreq>{item.ChangeFrequency}</changefreq>");
             }
 
-            // Add priority
+            // priority 추가
             if (item.Priority > 0)
             {
                 sitemapContent.AppendLine($"    <priority>{item.Priority:F1}</priority>");
@@ -87,15 +87,15 @@ public void Generate(SiteConfig config, List<ContentItem> contentItems, string o
 
     private DateTime? GetLastModifiedDate(ContentItem item)
     {
-        // If explicitly set, use it
+        // 명시적으로 설정된 경우 사용
         if (item.LastModified.HasValue)
             return item.LastModified.Value;
 
-        // For posts, use the date
+        // 포스트인 경우 날짜 사용
         if (item is Post post)
             return post.Date;
 
-        // For pages with date, use it
+        // 날짜가 있는 페이지인 경우 사용
         if (item is Page page && page.Date.HasValue)
             return page.Date.Value;
 

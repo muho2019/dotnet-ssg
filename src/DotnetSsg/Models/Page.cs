@@ -2,8 +2,15 @@ using YamlDotNet.Serialization;
 
 namespace DotnetSsg.Models;
 
+/// <summary>
+/// 일반 페이지 콘텐츠를 나타내는 모델입니다.
+/// (예: About, Contact 등)
+/// </summary>
 public class Page : ContentItem
 {
+    /// <summary>
+    /// 페이지 생성 또는 수정 날짜 (선택 사항)
+    /// </summary>
     [YamlMember(Alias = "date")]
     public DateTime? Date { get; set; }
 

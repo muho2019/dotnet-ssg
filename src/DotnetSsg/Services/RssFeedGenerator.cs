@@ -27,7 +27,7 @@ public class RssFeedGenerator : IRssFeedGenerator
 
         writer.WriteStartElement("channel");
 
-        // Channel metadata
+        // 채널 메타데이터
         writer.WriteElementString("title", config.Title);
         writer.WriteElementString("description", config.Description);
         var baseUri = config.BaseUri;
@@ -49,7 +49,7 @@ public class RssFeedGenerator : IRssFeedGenerator
             writer.WriteElementString("lastBuildDate", sortedPosts.First().Date.ToString("R"));
         }
 
-        // Items
+        // 아이템 (포스트 목록)
         foreach (var post in sortedPosts)
         {
             writer.WriteStartElement("item");
@@ -65,7 +65,7 @@ public class RssFeedGenerator : IRssFeedGenerator
                 writer.WriteElementString("description", post.Description);
             }
 
-            // Content (full HTML content)
+            // 본문 (전체 HTML 내용)
             if (!string.IsNullOrEmpty(post.HtmlContent))
             {
                 writer.WriteStartElement("content", "encoded", "http://purl.org/rss/1.0/modules/content/");
@@ -75,7 +75,7 @@ public class RssFeedGenerator : IRssFeedGenerator
 
             writer.WriteElementString("pubDate", post.Date.ToString("R"));
 
-            // Tags as categories
+            // 태그를 카테고리로 추가
             if (post.Tags != null)
             {
                 foreach (var tag in post.Tags)

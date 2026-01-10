@@ -36,7 +36,12 @@ public class HtmlGenerator : IHtmlGenerator
         var fullHtml = await strategy.RenderAsync(item, siteConfig);
 
         // PathResolver를 사용하여 출력 경로 결정 (HtmlGenerator의 로직 단순화)
-        string outputPath = _pathResolver.GetOutputPath(item);
+        // 참고: 여기서 contentRoot는 "content"로 가정합니다. HtmlGenerator는 보통 빌드 컨텍스트에서 실행되며
+        // 소스 경로는 프로젝트 루트에 상대적이거나 절대 경로입니다.
+        // 더 나은 방법: MarkdownParser에서 이미 item.OutputPath가 설정되었다면 그것을 신뢰하는 것이 좋음?
+        // 일관성을 위해 PathResolver를 사용하되, contentRoot가 동적이라면 알아야 합니다.
+        // 현재로서는 PathResolver 인터페이스/구현에서 기본값 "content"가 관례와 일치합니다.
+        string outputPath = _pathResolver.GetOutputPath(item, "content");
 
         // 디렉토리 생성 및 파일 저장
         var outputDir = Path.GetDirectoryName(outputPath);
@@ -250,7 +255,7 @@ public class HtmlGenerator : IHtmlGenerator
         if (formattedTitle.Length > 60)
         {
             _logger.LogWarning(
-                "Title length warning: '{FormattedTitle}' is {TitleLength} characters (recommended: 50-60)", formattedTitle, formattedTitle.Length);
+                "제목 길이 경고: '{FormattedTitle}'의 길이는 {TitleLength}자입니다 (권장: 50-60자)", formattedTitle, formattedTitle.Length);
         }
 
         return formattedTitle;

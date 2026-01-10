@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@Title</title>
     <meta name="description" content="@Description">    
-    @* Canonical URL *@
+    @* 표준(Canonical) URL *@
     @if (!string.IsNullOrEmpty(CanonicalUrl))
     {
         <link rel="canonical" href="@CanonicalUrl" />
     }
     
-    @* RSS Feed Auto-Discovery *@
+    @* RSS 피드 자동 감지 *@
     <link rel="alternate" type="application/rss+xml" title="@SiteTitle RSS Feed" href="@(BasePath)feed.xml" />
     
-    @* Open Graph Tags *@
+    @* Open Graph 태그 *@
     <meta property="og:type" content="@OgType" />
     <meta property="og:title" content="@Title" />
     <meta property="og:description" content="@Description" />
@@ -32,7 +32,7 @@
     }
     <meta property="og:site_name" content="@SiteTitle" />
     
-    @* Twitter Card Tags *@
+    @* Twitter Card 태그 *@
     <meta name="twitter:card" content="@TwitterCardType" />
     <meta name="twitter:title" content="@Title" />
     <meta name="twitter:description" content="@Description" />
@@ -83,7 +83,7 @@
         </script>
     }
     
-    @* Structured Data (JSON-LD) *@
+    @* 구조화된 데이터 (JSON-LD) *@
     @if (!string.IsNullOrEmpty(StructuredData))
     {
         <script type="application/ld+json">

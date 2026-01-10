@@ -6,7 +6,7 @@ public class StaticFileCopier : IStaticFileCopier
     {
         if (!Directory.Exists(sourceDirectory))
         {
-            Console.WriteLine($"Info: Source directory '{sourceDirectory}' does not exist. Nothing to copy.");
+            Console.WriteLine($"정보: 소스 디렉토리 '{sourceDirectory}'가 존재하지 않습니다. 복사할 내용이 없습니다.");
             return;
         }
 

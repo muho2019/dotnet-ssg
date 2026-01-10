@@ -93,8 +93,8 @@ No front matter here.";
         var result = await _parser.ParseAsync(filePath, contentDir);
 
         // Assert
-        Assert.Equal(string.Empty, result.Url); // Root index usually maps to / or empty string base
-        Assert.Equal("index.html", result.OutputPath);
+        Assert.Equal("/", result.Url); // Root index usually maps to / or empty string base
+        Assert.Equal("output/index.html", result.OutputPath);
 
         // Cleanup
         File.Delete(filePath);

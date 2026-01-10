@@ -15,8 +15,8 @@ var serviceCollection = new ServiceCollection();
 serviceCollection.AddLogging(builder =>
 {
     builder.AddConsole();
-    // Reduce default logging noise but ensure our app logs are visible
-    // We can set it to Information by default, or keep Warning but use Information for important build steps
+    // 기본 로깅 노이즈를 줄이되 앱 로그는 보이도록 설정
+    // 기본적으로 Information으로 설정하거나, Warning으로 유지하되 중요한 빌드 단계에는 Information을 사용
     builder.SetMinimumLevel(LogLevel.Information);
     builder.AddFilter("Microsoft", LogLevel.Warning);
     builder.AddFilter("System", LogLevel.Warning);
@@ -32,6 +32,7 @@ serviceCollection.AddSingleton<IRobotsTxtGenerator, RobotsTxtGenerator>();
 serviceCollection.AddSingleton<IRssFeedGenerator, RssFeedGenerator>();
 serviceCollection.AddSingleton<IFileSystemUtils, FileSystemUtils>();
 serviceCollection.AddSingleton<IPathResolver, PathResolver>();
+serviceCollection.AddSingleton<ISeoService, SeoService>();
 
 // Scoped: 빌드/요청 단위로 상태가 관리되어야 하는 서비스
 // (BlazorRenderer, HtmlGenerator 등은 내부적으로 상태를 가질 수 있음)

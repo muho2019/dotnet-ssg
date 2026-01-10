@@ -34,7 +34,7 @@ public class ConfigLoaderTests
             x => x.Log(
                 LogLevel.Warning,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("not found")),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("찾을 수 없습니다")), // Updated to Korean
                 null,
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
@@ -108,7 +108,7 @@ public class ConfigLoaderTests
                 x => x.Log(
                     LogLevel.Error,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Invalid JSON")),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("JSON 형식이 잘못되었습니다")),
                     It.IsAny<JsonException>(),
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
