@@ -1,6 +1,7 @@
 using DotnetSsg.Models;
 using DotnetSsg.Components.Pages;
 using DotnetSsg.Components.Layout;
+using DotnetSsg.Services.RenderStrategies;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
@@ -11,92 +12,27 @@ public class HtmlGenerator : IHtmlGenerator
 {
     private readonly IBlazorRenderer _blazorRenderer;
     private readonly ILogger<HtmlGenerator> _logger;
+    private readonly IEnumerable<IRenderStrategy> _renderStrategies;
 
-    public HtmlGenerator(IBlazorRenderer blazorRenderer, ILogger<HtmlGenerator> logger)
+    public HtmlGenerator(IBlazorRenderer blazorRenderer, ILogger<HtmlGenerator> logger, IEnumerable<IRenderStrategy> renderStrategies)
     {
         _blazorRenderer = blazorRenderer;
         _logger = logger;
+        _renderStrategies = renderStrategies;
     }
 
 
     public async Task GenerateAsync(ContentItem item, SiteConfig siteConfig)
     {
-        string fullHtml;
-
-        if (item is Post post)
+        var strategy = _renderStrategies.FirstOrDefault(s => s.CanRender(item));
+        if (strategy == null)
         {
-            // Post를 직접 MainLayout의 Body로 전달
-            var canonicalUrl = BuildCanonicalUrl(siteConfig, post.Url);
-            var ogImage = GetAbsoluteImageUrl(siteConfig, post.CoverImage ?? post.Image ?? siteConfig.OgImage);
-            var structuredData = GenerateArticleStructuredData(post, siteConfig, canonicalUrl, ogImage);
-            var optimizedTitle = FormatTitle(post.Title, siteConfig.Title);
-            var optimizedDescription = !string.IsNullOrWhiteSpace(post.OptimizedDescription)
-                ? post.OptimizedDescription
-                : siteConfig.Description;
-
-            var layoutParams = new Dictionary<string, object?>
-            {
-                ["ChildContent"] = (RenderFragment)(builder =>
-                {
-                    builder.OpenComponent<PostPage>(0);
-                    builder.AddAttribute(1, "Post", post);
-                    builder.CloseComponent();
-                }),
-                ["Title"] = optimizedTitle,
-                ["Description"] = optimizedDescription,
-                ["SiteTitle"] = siteConfig.Title,
-                ["Author"] = siteConfig.Author,
-                ["GithubUrl"] = siteConfig.GithubUrl,
-                ["GoogleAnalyticsId"] = siteConfig.GoogleAnalyticsId,
-                ["BasePath"] = siteConfig.BasePath,
-                ["CanonicalUrl"] = canonicalUrl,
-                ["OgType"] = "article",
-                ["OgImage"] = ogImage,
-                ["OgImageAlt"] = post.ImageAlt ?? post.Title,
-                ["TwitterCardType"] = !string.IsNullOrEmpty(ogImage) ? "summary_large_image" : "summary",
-                ["TwitterSite"] = siteConfig.TwitterSite,
-                ["TwitterCreator"] = siteConfig.TwitterCreator,
-                ["StructuredData"] = structuredData
-            };
-
-            fullHtml = await _blazorRenderer.RenderComponentAsync<MainLayout>(layoutParams);
+            _logger.LogWarning("No render strategy found for content item type: {ItemType}", item.GetType().Name);
+            return;
         }
-        else
-        {
-            // Page를 직접 MainLayout의 Body로 전달
-            var canonicalUrl = BuildCanonicalUrl(siteConfig, item.Url);
-            var ogImage = GetAbsoluteImageUrl(siteConfig, item.CoverImage ?? item.Image ?? siteConfig.OgImage);
-            var optimizedTitle = FormatTitle(item.Title, siteConfig.Title);
-            var optimizedDescription = !string.IsNullOrWhiteSpace(item.OptimizedDescription)
-                ? item.OptimizedDescription
-                : siteConfig.Description;
 
-            var layoutParams = new Dictionary<string, object?>
-            {
-                ["ChildContent"] = (RenderFragment)(builder =>
-                {
-                    builder.OpenComponent<PageTemplate>(0);
-                    builder.AddAttribute(1, "Page", item);
-                    builder.CloseComponent();
-                }),
-                ["Title"] = optimizedTitle,
-                ["Description"] = optimizedDescription,
-                ["SiteTitle"] = siteConfig.Title,
-                ["Author"] = siteConfig.Author,
-                ["GithubUrl"] = siteConfig.GithubUrl,
-                ["GoogleAnalyticsId"] = siteConfig.GoogleAnalyticsId,
-                ["BasePath"] = siteConfig.BasePath,
-                ["CanonicalUrl"] = canonicalUrl,
-                ["OgType"] = "website",
-                ["OgImage"] = ogImage,
-                ["OgImageAlt"] = item.ImageAlt ?? item.Title,
-                ["TwitterCardType"] = !string.IsNullOrEmpty(ogImage) ? "summary_large_image" : "summary",
-                ["TwitterSite"] = siteConfig.TwitterSite,
-                ["TwitterCreator"] = siteConfig.TwitterCreator
-            };
+        var fullHtml = await strategy.RenderAsync(item, siteConfig);
 
-            fullHtml = await _blazorRenderer.RenderComponentAsync<MainLayout>(layoutParams);
-        }
 
         // 출력 경로 결정
         var relativePath = Path.GetRelativePath("content", item.SourcePath);

@@ -38,6 +38,11 @@ serviceCollection.AddScoped<IBlazorRenderer, BlazorRenderer>();
 serviceCollection.AddScoped<IMarkdownParser, MarkdownParser>();
 serviceCollection.AddScoped<IHtmlGenerator, HtmlGenerator>();
 
+// Render Strategies
+serviceCollection.AddScoped<DotnetSsg.Services.RenderStrategies.IRenderStrategy, DotnetSsg.Services.RenderStrategies.PostRenderStrategy>();
+serviceCollection.AddScoped<DotnetSsg.Services.RenderStrategies.IRenderStrategy, DotnetSsg.Services.RenderStrategies.PageRenderStrategy>();
+
+
 // Transient: 가볍고 필요할 때마다 생성해도 되는 서비스
 serviceCollection.AddTransient<IBuildService, BuildService>();
 
