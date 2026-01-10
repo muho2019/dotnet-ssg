@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DotnetSsg.Services;
 
-public class BlazorRenderer : IAsyncDisposable
+public class BlazorRenderer : IBlazorRenderer
 {
     private readonly ServiceProvider _serviceProvider;
     private readonly ILoggerFactory _loggerFactory;

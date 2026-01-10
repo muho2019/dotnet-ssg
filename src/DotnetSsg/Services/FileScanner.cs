@@ -1,6 +1,6 @@
 namespace DotnetSsg.Services;
 
-public class FileScanner
+public class FileScanner : IFileScanner
 {
     public IEnumerable<string> Scan(string directory, string extension)
     {

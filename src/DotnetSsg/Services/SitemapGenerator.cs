@@ -3,10 +3,10 @@ using DotnetSsg.Models;
 
 namespace DotnetSsg.Services;
 
-public class SitemapGenerator
+public class SitemapGenerator : ISitemapGenerator
 {
-    public void Generate(SiteConfig config, List<ContentItem> contentItems, string outputDirectory, List<Post> posts,
-        IEnumerable<string> tags)
+public void Generate(SiteConfig config, List<ContentItem> contentItems, string outputDirectory, List<Post> posts,
+        List<string> tags)
     {
         // Build sitemap items including home page and tag archives
         var sitemapItems = new List<ContentItem>(contentItems);

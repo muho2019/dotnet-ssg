@@ -2,18 +2,22 @@ using DotnetSsg.Models;
 using DotnetSsg.Components.Pages;
 using DotnetSsg.Components.Layout;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
 namespace DotnetSsg.Services;
 
-public class HtmlGenerator
+public class HtmlGenerator : IHtmlGenerator
 {
-    private readonly BlazorRenderer _blazorRenderer;
+    private readonly IBlazorRenderer _blazorRenderer;
+    private readonly ILogger<HtmlGenerator> _logger;
 
-    public HtmlGenerator(BlazorRenderer blazorRenderer)
+    public HtmlGenerator(IBlazorRenderer blazorRenderer, ILogger<HtmlGenerator> logger)
     {
         _blazorRenderer = blazorRenderer;
+        _logger = logger;
     }
+
 
     public async Task GenerateAsync(ContentItem item, SiteConfig siteConfig)
     {
@@ -118,7 +122,7 @@ public class HtmlGenerator
         }
 
         await WriteFileWithRetryAsync(outputPath, fullHtml);
-        Console.WriteLine($"Generated: {outputPath}");
+        _logger.LogInformation("Generated: {OutputPath}", outputPath);
     }
 
     public async Task GenerateIndexAsync(SiteConfig siteConfig, List<Post> posts, string outputDirectory)
@@ -157,7 +161,7 @@ public class HtmlGenerator
 
         var outputPath = Path.Combine(outputDirectory, "index.html");
         await WriteFileWithRetryAsync(outputPath, fullHtml);
-        Console.WriteLine($"Generated: {outputPath}");
+        _logger.LogInformation("Generated: {OutputPath}", outputPath);
     }
 
     public async Task GenerateTagArchiveAsync(SiteConfig siteConfig, string tag, List<Post> posts,
@@ -202,8 +206,9 @@ public class HtmlGenerator
 
         var outputPath = Path.Combine(tagDir, "index.html");
         await WriteFileWithRetryAsync(outputPath, fullHtml);
-        Console.WriteLine($"Generated: {outputPath}");
+        _logger.LogInformation("Generated: {OutputPath}", outputPath);
     }
+
 
     private string BuildCanonicalUrl(SiteConfig siteConfig, string relativePath)
     {
@@ -316,8 +321,8 @@ public class HtmlGenerator
         // SEO 권장 최대 길이 60자 체크 (경고만 표시, 강제하지 않음)
         if (formattedTitle.Length > 60)
         {
-            Console.WriteLine(
-                $"⚠️  Title length warning: '{formattedTitle}' is {formattedTitle.Length} characters (recommended: 50-60)");
+            _logger.LogWarning(
+                "Title length warning: '{FormattedTitle}' is {TitleLength} characters (recommended: 50-60)", formattedTitle, formattedTitle.Length);
         }
 
         return formattedTitle;

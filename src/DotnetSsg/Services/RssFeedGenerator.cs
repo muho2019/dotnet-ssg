@@ -4,7 +4,7 @@ using DotnetSsg.Models;
 
 namespace DotnetSsg.Services;
 
-public class RssFeedGenerator
+public class RssFeedGenerator : IRssFeedGenerator
 {
     public void Generate(SiteConfig config, List<Post> posts, string outputDirectory)
     {

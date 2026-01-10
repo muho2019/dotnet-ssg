@@ -1,21 +1,24 @@
 using System.Text.RegularExpressions;
 using DotnetSsg.Models;
 using Markdig;
+using Microsoft.Extensions.Logging;
 using YamlDotNet.Serialization;
 
 namespace DotnetSsg.Services;
 
-public class MarkdownParser
+public class MarkdownParser : IMarkdownParser
 {
     private readonly IDeserializer _yamlDeserializer;
+    private readonly ILogger<MarkdownParser> _logger;
 
-    public MarkdownParser()
+    public MarkdownParser(ILogger<MarkdownParser> logger)
     {
+        _logger = logger;
         // No need for a custom deserializer setup if we use YamlMember attributes
         _yamlDeserializer = new DeserializerBuilder().Build();
     }
 
-    public async Task<ContentItem> ParseAsync(string filePath)
+    public async Task<ContentItem> ParseAsync(string filePath, string contentRoot)
     {
         var fileContent = await File.ReadAllTextAsync(filePath);
 
@@ -35,7 +38,10 @@ public class MarkdownParser
 
         ContentItem item;
         var normalizedPath = filePath.Replace('\\', '/');
-        if (normalizedPath.Contains("content/posts", StringComparison.OrdinalIgnoreCase))
+        // Check relative to content root to determine if it's a post
+        var relativePathToRoot = Path.GetRelativePath(contentRoot, filePath).Replace('\\', '/');
+        
+        if (relativePathToRoot.StartsWith("posts/", StringComparison.OrdinalIgnoreCase))
         {
             var post = _yamlDeserializer.Deserialize<Post>(frontMatter);
             item = post;
@@ -43,8 +49,7 @@ public class MarkdownParser
             if (post.Date == default)
             {
                 post.Date = File.GetCreationTime(filePath);
-                Console.WriteLine(
-                    $"Warning: Date not found or invalid in Front Matter for '{filePath}'. Using file creation time.");
+                _logger.LogWarning("Date not found or invalid in Front Matter for '{FilePath}'. Using file creation time.", filePath);
             }
 
             // YamlDotNet handles converting single string or list of strings to List<string>
@@ -67,7 +72,7 @@ public class MarkdownParser
         else
         {
             // For pages, we can still deserialize into the base type to get Title, etc.
-            item = _yamlDeserializer.Deserialize<Page>(frontMatter);
+            item = _yamlDeserializer.Deserialize<Page>(frontMatter) ?? new Page();
 
             // Set SEO defaults for pages
             if (item.Priority == 0.5) // Not set by user
@@ -84,13 +89,13 @@ public class MarkdownParser
         if (string.IsNullOrWhiteSpace(item.Title))
         {
             item.Title = GetTitleFromFilePath(filePath);
-            Console.WriteLine($"Warning: Title not found in Front Matter for '{filePath}'. Using '{item.Title}'.");
+            _logger.LogWarning("Title not found in Front Matter for '{FilePath}'. Using '{Title}'.", filePath, item.Title);
         }
 
         item.SourcePath = filePath;
         item.HtmlContent = htmlContent;
-        item.Url = GenerateUrl(filePath);
-        item.OutputPath = GenerateOutputPath(filePath);
+        item.Url = GenerateUrl(filePath, contentRoot);
+        item.OutputPath = GenerateOutputPath(filePath, contentRoot);
 
         return item;
     }
@@ -112,9 +117,9 @@ public class MarkdownParser
         return System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(fileName.Replace('-', ' '));
     }
 
-    private string GenerateUrl(string filePath)
+    private string GenerateUrl(string filePath, string contentRoot)
     {
-        var relativePath = Path.GetRelativePath("content", filePath);
+        var relativePath = Path.GetRelativePath(contentRoot, filePath);
         var directory = Path.GetDirectoryName(relativePath) ?? string.Empty;
         var normalizedDirectory = directory.Replace(Path.DirectorySeparatorChar, '/');
         var fileName = Path.GetFileNameWithoutExtension(relativePath);
@@ -138,9 +143,9 @@ public class MarkdownParser
         return prefix + fileName + "/";
     }
 
-    private string GenerateOutputPath(string filePath)
+    private string GenerateOutputPath(string filePath, string contentRoot)
     {
-        var relativePath = Path.GetRelativePath("content", filePath);
+        var relativePath = Path.GetRelativePath(contentRoot, filePath);
         var fileName = Path.GetFileNameWithoutExtension(relativePath);
         var directory = Path.GetDirectoryName(relativePath) ?? string.Empty;
 

@@ -1,11 +1,18 @@
 using System.Text.Json;
 using DotnetSsg.Models;
+using Microsoft.Extensions.Logging;
 
 namespace DotnetSsg.Services;
 
-public class ConfigLoader
+public class ConfigLoader : IConfigLoader
 {
     private const string DefaultConfigPath = "config.json";
+    private readonly ILogger<ConfigLoader> _logger;
+
+    public ConfigLoader(ILogger<ConfigLoader> logger)
+    {
+        _logger = logger;
+    }
 
     public async Task<SiteConfig> LoadConfigAsync(string? configPath = null)
     {
@@ -13,7 +20,7 @@ public class ConfigLoader
 
         if (!File.Exists(configPath))
         {
-            Console.WriteLine($"Warning: Config file '{configPath}' not found. Using default configuration.");
+            _logger.LogWarning("Warning: Config file '{ConfigPath}' not found. Using default configuration.", configPath);
             return new SiteConfig();
         }
 
@@ -33,12 +40,12 @@ public class ConfigLoader
         }
         catch (JsonException ex)
         {
-            Console.Error.WriteLine($"Error: Invalid JSON format in '{configPath}'. Details: {ex.Message}");
+            _logger.LogError(ex, "Error: Invalid JSON format in '{ConfigPath}'.", configPath);
             throw; // Rethrow to stop the build process
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: Failed to read config file '{configPath}'. Details: {ex.Message}");
+            _logger.LogError(ex, "Error: Failed to read config file '{ConfigPath}'.", configPath);
             throw; // Rethrow to stop the build process
         }
     }

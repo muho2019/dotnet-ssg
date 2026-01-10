@@ -6,7 +6,7 @@ namespace DotnetSsg.Commands;
 
 public static class BuildCommand
 {
-    public static Command Create()
+    public static Command Create(IBuildService buildService, ICssBuilder cssBuilder)
     {
         var outputOption = new Option<string>("--output", "-o")
         {
@@ -26,7 +26,7 @@ public static class BuildCommand
             draftsOption
         };
 
-        command.Action = new AsynchronousBuildAction(outputOption, draftsOption);
+        command.Action = new AsynchronousBuildAction(outputOption, draftsOption, buildService, cssBuilder);
 
         return command;
     }
@@ -35,11 +35,19 @@ public static class BuildCommand
     {
         private readonly Option<string> _outputOption;
         private readonly Option<bool> _draftsOption;
+        private readonly IBuildService _buildService;
+        private readonly ICssBuilder _cssBuilder;
 
-        public AsynchronousBuildAction(Option<string> outputOption, Option<bool> draftsOption)
+        public AsynchronousBuildAction(
+            Option<string> outputOption,
+            Option<bool> draftsOption,
+            IBuildService buildService,
+            ICssBuilder cssBuilder)
         {
             _outputOption = outputOption;
             _draftsOption = draftsOption;
+            _buildService = buildService;
+            _cssBuilder = cssBuilder;
         }
 
         public override async Task<int> InvokeAsync(ParseResult parseResult,
@@ -49,64 +57,15 @@ public static class BuildCommand
             var drafts = parseResult.GetValue(_draftsOption);
 
             var workingDirectory = Directory.GetCurrentDirectory();
-            var buildService = new BuildService();
-            var success = await buildService.BuildAsync(workingDirectory, output, drafts);
+            var success = await _buildService.BuildAsync(workingDirectory, output, drafts);
 
             if (success)
             {
                 // Tailwind CSS 빌드
-                await BuildTailwindCssAsync(workingDirectory);
+                await _cssBuilder.BuildTailwindCssAsync(workingDirectory);
             }
 
             return success ? 0 : 1;
-        }
-
-        private static async Task BuildTailwindCssAsync(string workingDirectory)
-        {
-            try
-            {
-                Console.WriteLine("🎨 Tailwind CSS 빌드 중...");
-
-                var isWindows = Environment.OSVersion.Platform == PlatformID.Win32NT;
-
-                // Windows에서는 PowerShell을 통해 npm 실행
-                // macOS/Linux에서는 직접 npm 실행
-                // 참고: npm은 Node.js와 함께 설치되며 모든 플랫폼에서 동일하게 동작
-                var processInfo = new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = isWindows ? "powershell.exe" : "npm",
-                    Arguments = isWindows ? "-NoProfile -Command \"npm run css:build\"" : "run css:build",
-                    WorkingDirectory = workingDirectory,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true
-                };
-
-                using var process = System.Diagnostics.Process.Start(processInfo);
-                if (process == null)
-                {
-                    Console.WriteLine("⚠️ npm을 실행할 수 없습니다. Tailwind CSS 빌드를 건너뜁니다.");
-                    Console.WriteLine("   npm이 설치되어 있고 PATH에 등록되어 있는지 확인하세요.");
-                    return;
-                }
-
-                await process.WaitForExitAsync();
-
-                if (process.ExitCode == 0)
-                {
-                    Console.WriteLine("✅ Tailwind CSS 빌드 완료");
-                }
-                else
-                {
-                    var error = await process.StandardError.ReadToEndAsync();
-                    Console.WriteLine($"⚠️ Tailwind CSS 빌드 실패: {error}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"⚠️ Tailwind CSS 빌드 중 오류: {ex.Message}");
-            }
         }
     }
 }

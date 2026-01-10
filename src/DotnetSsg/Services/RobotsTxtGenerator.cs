@@ -2,7 +2,7 @@ using DotnetSsg.Models;
 
 namespace DotnetSsg.Services;
 
-public class RobotsTxtGenerator
+public class RobotsTxtGenerator : IRobotsTxtGenerator
 {
     public void Generate(SiteConfig config, string outputDirectory)
     {

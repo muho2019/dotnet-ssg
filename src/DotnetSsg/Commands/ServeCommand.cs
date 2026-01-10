@@ -6,7 +6,7 @@ namespace DotnetSsg.Commands;
 
 public static class ServeCommand
 {
-    public static Command Create()
+    public static Command Create(IBuildService buildService, ICssBuilder cssBuilder)
     {
         var portOption = new Option<int>("--port", "-p")
         {
@@ -40,7 +40,7 @@ public static class ServeCommand
             noWatchOption
         };
 
-        command.Action = new AsynchronousServeAction(portOption, outputOption, draftsOption, noWatchOption);
+        command.Action = new AsynchronousServeAction(portOption, outputOption, draftsOption, noWatchOption, buildService, cssBuilder);
 
         return command;
     }
@@ -51,14 +51,23 @@ public static class ServeCommand
         private readonly Option<string> _outputOption;
         private readonly Option<bool> _draftsOption;
         private readonly Option<bool> _noWatchOption;
+        private readonly IBuildService _buildService;
+        private readonly ICssBuilder _cssBuilder;
 
-        public AsynchronousServeAction(Option<int> portOption, Option<string> outputOption,
-            Option<bool> draftsOption, Option<bool> noWatchOption)
+        public AsynchronousServeAction(
+            Option<int> portOption,
+            Option<string> outputOption,
+            Option<bool> draftsOption,
+            Option<bool> noWatchOption,
+            IBuildService buildService,
+            ICssBuilder cssBuilder)
         {
             _portOption = portOption;
             _outputOption = outputOption;
             _draftsOption = draftsOption;
             _noWatchOption = noWatchOption;
+            _buildService = buildService;
+            _cssBuilder = cssBuilder;
         }
 
         public override async Task<int> InvokeAsync(ParseResult parseResult,
@@ -75,13 +84,13 @@ public static class ServeCommand
             // 서버 시작 전 항상 최신 상태로 빌드
             var draftMessage = drafts ? " (draft 포함)" : "";
             Console.WriteLine($"📦 최신 상태로 빌드 중{draftMessage}...\n");
-            var buildService = new BuildService();
-            var buildSuccess = await buildService.BuildAsync(workingDirectory, output, drafts);
+
+            var buildSuccess = await _buildService.BuildAsync(workingDirectory, output, drafts);
 
             if (buildSuccess)
             {
                 // Tailwind CSS 빌드
-                await BuildTailwindCssAsync(workingDirectory);
+                await _cssBuilder.BuildTailwindCssAsync(workingDirectory);
             }
             else
             {
@@ -151,14 +160,20 @@ public static class ServeCommand
                         Console.WriteLine($"[{timestamp}] 📝 {changedFile} 변경 감지");
                         Console.WriteLine($"[{timestamp}] ⚙️  재빌드 시작...");
 
-                        var rebuildService = new BuildService();
                         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-                        var success = await rebuildService.BuildAsync(workingDirectory, output, drafts);
+                        // 여기서는 재빌드 시 BuildService를 직접 생성하지 않고, 
+                        // 이미 주입받은 _buildService는 Scoped가 아니므로 직접 사용하기 보다는
+                        // 원래는 IServiceScopeFactory를 주입받아 매번 새로운 BuildService를 생성하는게 맞을 수도 있습니다.
+                        // 하지만 현재 Program.cs에서 BuildService는 Transient로 등록되어 있고,
+                        // ServeCommand 생성 시점에 한 번 주입된 인스턴스를 계속 사용하게 됩니다.
+                        // BuildService 내부에서 CreateAsyncScope를 사용하므로 
+                        // BuildAsync 메서드는 상태를 공유하지 않고 안전하게 실행될 수 있습니다.
+                        var success = await _buildService.BuildAsync(workingDirectory, output, drafts);
 
                         if (success)
                         {
                             // BuildService가 output을 삭제하므로 항상 Tailwind CSS 재빌드 필요
-                            await BuildTailwindCssAsync(workingDirectory);
+                            await _cssBuilder.BuildTailwindCssAsync(workingDirectory);
 
                             stopwatch.Stop();
                             Console.WriteLine($"[{timestamp}] ✅ 재빌드 완료 ({stopwatch.ElapsedMilliseconds}ms)");
@@ -193,61 +208,6 @@ public static class ServeCommand
             }
 
             return 0;
-        }
-
-        private static async Task BuildTailwindCssAsync(string workingDirectory)
-        {
-            try
-            {
-                Console.WriteLine("🎨 Tailwind CSS 빌드 중...");
-
-                var isWindows = Environment.OSVersion.Platform == PlatformID.Win32NT;
-
-                var processInfo = new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = isWindows ? "powershell.exe" : "npm",
-                    Arguments = isWindows ? "-NoProfile -Command \"npm run css:build\"" : "run css:build",
-                    WorkingDirectory = workingDirectory,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true
-                };
-
-                using var process = System.Diagnostics.Process.Start(processInfo);
-                if (process == null)
-                {
-                    Console.WriteLine("⚠️ npm을 실행할 수 없습니다. Tailwind CSS 빌드를 건너뜁니다.");
-                    return;
-                }
-
-                // stderr를 비동기로 읽기 시작 (블로킹 방지)
-                var errorBuilder = new System.Text.StringBuilder();
-                process.ErrorDataReceived += (_, e) =>
-                {
-                    if (!string.IsNullOrEmpty(e.Data))
-                    {
-                        errorBuilder.AppendLine(e.Data);
-                    }
-                };
-                process.BeginErrorReadLine();
-
-                await process.WaitForExitAsync();
-
-                if (process.ExitCode == 0)
-                {
-                    Console.WriteLine("✅ Tailwind CSS 빌드 완료");
-                }
-                else
-                {
-                    var error = errorBuilder.ToString();
-                    Console.WriteLine($"⚠️ Tailwind CSS 빌드 실패: {error}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"⚠️ Tailwind CSS 빌드 중 오류: {ex.Message}");
-            }
         }
     }
 }

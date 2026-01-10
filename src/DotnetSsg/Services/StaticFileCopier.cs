@@ -1,6 +1,6 @@
 namespace DotnetSsg.Services;
 
-public class StaticFileCopier
+public class StaticFileCopier : IStaticFileCopier
 {
     public void Copy(string sourceDirectory, string destinationDirectory)
     {
