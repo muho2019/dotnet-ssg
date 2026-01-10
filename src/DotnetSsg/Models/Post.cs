@@ -7,8 +7,17 @@ public class Post : ContentItem
     [YamlMember(Alias = "date")]
     public DateTime Date { get; set; }
 
+    private List<string> _tags = new();
+
     [YamlMember(Alias = "tags")]
-    public List<string> Tags { get; set; } = new();
+    public List<string> Tags 
+    { 
+        get => _tags;
+        set => _tags = value ?? new List<string>();
+    }
+
+    public IReadOnlyList<string> ReadOnlyTags => _tags.AsReadOnly();
+
 
     [YamlMember(Alias = "author")]
     public string? Author { get; set; }

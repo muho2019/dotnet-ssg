@@ -84,7 +84,10 @@ public class HtmlGenerator : IHtmlGenerator
 
         var fullHtml = await _blazorRenderer.RenderComponentAsync<MainLayout>(layoutParams);
 
+        // PathResolver를 활용할 수도 있지만, IndexGenerator/TagArchiveGenerator의 역할이므로 
+        // 일단 outputDirectory를 신뢰하고 파일명만 추가
         var outputPath = Path.Combine(outputDirectory, "index.html");
+        
         await WriteFileWithRetryAsync(outputPath, fullHtml);
         _logger.LogInformation("Generated: {OutputPath}", outputPath);
     }
